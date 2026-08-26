@@ -1,17 +1,16 @@
+"use strict";
+
 /* =========================================================
    THE LAST ROOM
-   CORRECTED COMPLETE GAME.JS
-
-   Compatible with:
-   - index.html supplied by user
-   - style.css supplied by user
+   COMPLETE / CLEAN GAME.JS
 
    Controls:
-   W A S D  = Move
-   Mouse    = Look
-   E        = Interact
-   F        = Flashlight
-   ESC      = Pause
+   W A S D = Move
+   Mouse   = Look
+   E       = Interact
+   ENTER   = Interact
+   F       = Flashlight
+   ESC     = Pause
 ========================================================= */
 
 
@@ -20,7 +19,7 @@
 ========================================================= */
 
 const canvas = document.getElementById("gameCanvas");
-const ctx = canvas.getContext("2d");
+const ctx = canvas ? canvas.getContext("2d") : null;
 
 const game = document.getElementById("game");
 
@@ -100,6 +99,10 @@ if (requiredElements.some(element => !element)) {
 
 function resizeCanvas() {
 
+    if (!canvas || !ctx) {
+        return;
+    }
+
     const dpr = Math.min(
         window.devicePixelRatio || 1,
         2
@@ -142,27 +145,16 @@ resizeCanvas();
 const MAP = [
 
     "###############",
-
     "#.............#",
-
     "#.............#",
-
     "#...####D###..#",
-
     "#.............#",
-
     "#.............#",
-
     "#.....###.....#",
-
     "#.....#.......#",
-
     "#.....#.......#",
-
     "#.............#",
-
     "#.............#",
-
     "###############"
 
 ];
@@ -180,7 +172,6 @@ const FOV = Math.PI / 3;
 const player = {
 
     x: 2.5,
-
     y: 2.5,
 
     angle: Math.PI / 2,
@@ -207,6 +198,7 @@ let elapsed = 0;
 
 let apparitionActive = false;
 let apparitionTimer = 0;
+let apparitionTimeout = null;
 
 let interactionTarget = null;
 
@@ -257,14 +249,29 @@ function resetGame() {
 
     footstepTimer = 0;
 
+    keys.w = false;
+    keys.a = false;
+    keys.s = false;
+    keys.d = false;
+
+    if (apparitionTimeout) {
+
+        clearTimeout(apparitionTimeout);
+
+        apparitionTimeout = null;
+
+    }
+
     updateBatteryUI();
 
-    objective.textContent =
-        "Find a way out.";
+    if (objective) {
 
-    interaction.classList.remove(
-        "visible"
-    );
+        objective.textContent =
+            "Find a way out.";
+
+    }
+
+    hideInteraction();
 
 }
 
@@ -280,21 +287,39 @@ window.addEventListener(
         const key =
             event.key.toLowerCase();
 
+
+        /* -----------------------------------------
+           MOVEMENT
+        ----------------------------------------- */
+
         if (key === "w") {
+
             keys.w = true;
+
         }
 
         if (key === "a") {
+
             keys.a = true;
+
         }
 
         if (key === "s") {
+
             keys.s = true;
+
         }
 
         if (key === "d") {
+
             keys.d = true;
+
         }
+
+
+        /* -----------------------------------------
+           FLASHLIGHT
+        ----------------------------------------- */
 
         if (
             key === "f" &&
@@ -302,39 +327,68 @@ window.addEventListener(
             !paused
         ) {
 
+            event.preventDefault();
+
             toggleFlashlight();
+
+            return;
 
         }
 
+
+        /* -----------------------------------------
+           INTERACTION
+           E OR ENTER
+        ----------------------------------------- */
+
         if (
-            key === "e" &&
+            (key === "e" || key === "enter") &&
             gameStarted &&
             !paused
         ) {
 
+            event.preventDefault();
+
+            updateInteraction();
+
             interact();
 
+            return;
+
         }
+
+
+        /* -----------------------------------------
+           ESCAPE / PAUSE
+        ----------------------------------------- */
 
         if (
             key === "escape" &&
             gameStarted
         ) {
 
+            event.preventDefault();
+
             if (
-                controlsPanel.classList
-                    .contains("hidden")
+                controlsPanel &&
+                controlsPanel.classList.contains("hidden")
             ) {
 
                 togglePause();
 
             }
 
+            return;
+
         }
 
     }
 );
 
+
+/* =========================================================
+   KEYBOARD RELEASE
+========================================================= */
 
 window.addEventListener(
     "keyup",
@@ -344,20 +398,46 @@ window.addEventListener(
             event.key.toLowerCase();
 
         if (key === "w") {
+
             keys.w = false;
+
         }
 
         if (key === "a") {
+
             keys.a = false;
+
         }
 
         if (key === "s") {
+
             keys.s = false;
+
         }
 
         if (key === "d") {
+
             keys.d = false;
+
         }
+
+    }
+);
+
+
+/* =========================================================
+   WINDOW BLUR
+   Prevent stuck movement keys
+========================================================= */
+
+window.addEventListener(
+    "blur",
+    function() {
+
+        keys.w = false;
+        keys.a = false;
+        keys.s = false;
+        keys.d = false;
 
     }
 );
@@ -372,14 +452,18 @@ document.addEventListener(
     function(event) {
 
         if (!gameStarted || paused) {
+
             return;
+
         }
 
         if (
             document.pointerLockElement !==
             canvas
         ) {
+
             return;
+
         }
 
         player.angle +=
@@ -390,13 +474,15 @@ document.addEventListener(
 
 
 /* =========================================================
-   SAFE POINTER LOCK
+   POINTER LOCK
 ========================================================= */
 
 function requestGamePointerLock() {
 
     if (!gameStarted || paused) {
+
         return;
+
     }
 
     if (
@@ -404,18 +490,24 @@ function requestGamePointerLock() {
         typeof canvas.requestPointerLock !==
         "function"
     ) {
+
         return;
+
     }
 
     if (
         document.pointerLockElement ===
         canvas
     ) {
+
         return;
+
     }
 
     if (pointerLockPending) {
+
         return;
+
     }
 
     pointerLockPending = true;
@@ -433,8 +525,9 @@ function requestGamePointerLock() {
 
             result.catch(
                 function() {
-                    // Pointer lock is optional.
-                    // Never break the game.
+
+                    /* Pointer lock optional */
+
                 }
             );
 
@@ -442,7 +535,9 @@ function requestGamePointerLock() {
 
     } catch (error) {
 
-        // Ignore browser pointer-lock errors.
+        console.warn(
+            "Pointer lock unavailable."
+        );
 
     }
 
@@ -462,21 +557,25 @@ function requestGamePointerLock() {
    CANVAS CLICK
 ========================================================= */
 
-canvas.addEventListener(
-    "click",
-    function() {
+if (canvas) {
 
-        if (
-            gameStarted &&
-            !paused
-        ) {
+    canvas.addEventListener(
+        "click",
+        function() {
 
-            requestGamePointerLock();
+            if (
+                gameStarted &&
+                !paused
+            ) {
+
+                requestGamePointerLock();
+
+            }
 
         }
+    );
 
-    }
-);
+}
 
 
 /* =========================================================
@@ -490,7 +589,9 @@ document.addEventListener(
         pointerLockPending = false;
 
         if (!gameStarted) {
+
             return;
+
         }
 
         if (
@@ -521,14 +622,18 @@ document.addEventListener(
    START BUTTON
 ========================================================= */
 
-startButton.addEventListener(
-    "click",
-    function() {
+if (startButton) {
 
-        startGame();
+    startButton.addEventListener(
+        "click",
+        function() {
 
-    }
-);
+            startGame();
+
+        }
+    );
+
+}
 
 
 /* =========================================================
@@ -538,7 +643,9 @@ startButton.addEventListener(
 function startGame() {
 
     if (gameStarted) {
+
         return;
+
     }
 
     gameStarted = true;
@@ -546,26 +653,34 @@ function startGame() {
 
     resetGame();
 
-    mainMenu.style.transition =
-        "opacity 0.7s ease";
+    if (mainMenu) {
 
-    mainMenu.style.opacity = "0";
+        mainMenu.style.transition =
+            "opacity 0.7s ease";
 
-    setTimeout(
-        function() {
+        mainMenu.style.opacity = "0";
 
-            mainMenu.classList.add(
-                "hidden"
-            );
+        setTimeout(
+            function() {
 
-            mainMenu.style.opacity = "";
+                mainMenu.classList.add(
+                    "hidden"
+                );
 
-        },
-        750
-    );
+                mainMenu.style.opacity = "";
 
-    objective.textContent =
-        "Find a way out.";
+            },
+            750
+        );
+
+    }
+
+    if (objective) {
+
+        objective.textContent =
+            "Find a way out.";
+
+    }
 
     showMessage(
         "The room is quiet.",
@@ -586,16 +701,22 @@ function startGame() {
 function togglePause() {
 
     if (!gameStarted) {
+
         return;
+
     }
 
     paused = !paused;
 
     if (paused) {
 
-        pauseMenu.classList.remove(
-            "hidden"
-        );
+        if (pauseMenu) {
+
+            pauseMenu.classList.remove(
+                "hidden"
+            );
+
+        }
 
         if (
             document.pointerLockElement ===
@@ -603,9 +724,13 @@ function togglePause() {
         ) {
 
             try {
+
                 document.exitPointerLock();
+
             } catch (error) {
-                // Ignore.
+
+                /* Ignore */
+
             }
 
         }
@@ -614,9 +739,13 @@ function togglePause() {
 
     } else {
 
-        pauseMenu.classList.add(
-            "hidden"
-        );
+        if (pauseMenu) {
+
+            pauseMenu.classList.add(
+                "hidden"
+            );
+
+        }
 
         requestGamePointerLock();
 
@@ -634,87 +763,107 @@ function togglePause() {
    RESUME
 ========================================================= */
 
-resumeButton.addEventListener(
-    "click",
-    function() {
+if (resumeButton) {
 
-        paused = false;
+    resumeButton.addEventListener(
+        "click",
+        function() {
 
-        pauseMenu.classList.add(
-            "hidden"
-        );
+            paused = false;
 
-        requestGamePointerLock();
+            pauseMenu.classList.add(
+                "hidden"
+            );
 
-    }
-);
+            requestGamePointerLock();
+
+        }
+    );
+
+}
 
 
 /* =========================================================
    RESTART
 ========================================================= */
 
-restartButton.addEventListener(
-    "click",
-    function() {
+if (restartButton) {
 
-        resetGame();
+    restartButton.addEventListener(
+        "click",
+        function() {
 
-        paused = false;
+            resetGame();
 
-        pauseMenu.classList.add(
-            "hidden"
-        );
+            paused = false;
 
-        showMessage(
-            "The room is quiet.",
-            "But something feels different."
-        );
+            pauseMenu.classList.add(
+                "hidden"
+            );
 
-        requestGamePointerLock();
+            showMessage(
+                "The room is quiet.",
+                "But something feels different."
+            );
 
-    }
-);
+            requestGamePointerLock();
+
+        }
+    );
+
+}
 
 
 /* =========================================================
    CONTROLS
 ========================================================= */
 
-controlsButton.addEventListener(
-    "click",
-    function() {
+if (controlsButton) {
 
-        controlsPanel.classList.remove(
-            "hidden"
-        );
+    controlsButton.addEventListener(
+        "click",
+        function() {
 
-    }
-);
+            controlsPanel.classList.remove(
+                "hidden"
+            );
 
+        }
+    );
 
-pauseControlsButton.addEventListener(
-    "click",
-    function() {
-
-        controlsPanel.classList.remove(
-            "hidden"
-        );
-
-    }
-);
+}
 
 
-closeControls.addEventListener(
-    "click",
-    function() {
+if (pauseControlsButton) {
 
-        controlsPanel.classList.add(
-            "hidden"
-        );
+    pauseControlsButton.addEventListener(
+        "click",
+        function() {
 
-    }
-);
+            controlsPanel.classList.remove(
+                "hidden"
+            );
+
+        }
+    );
+
+}
+
+
+if (closeControls) {
+
+    closeControls.addEventListener(
+        "click",
+        function() {
+
+            controlsPanel.classList.add(
+                "hidden"
+            );
+
+        }
+    );
+
+}
 
 
 /* =========================================================
@@ -723,8 +872,11 @@ closeControls.addEventListener(
 
 function isWall(x, y) {
 
-    const mapX = Math.floor(x);
-    const mapY = Math.floor(y);
+    const mapX =
+        Math.floor(x);
+
+    const mapY =
+        Math.floor(y);
 
     if (
         mapX < 0 ||
@@ -741,14 +893,18 @@ function isWall(x, y) {
         MAP[mapY][mapX];
 
     if (tile === "#") {
+
         return true;
+
     }
 
     if (
         tile === "D" &&
         !doorOpen
     ) {
+
         return true;
+
     }
 
     return false;
@@ -781,19 +937,27 @@ function updateMovement(dt) {
     let strafe = 0;
 
     if (keys.w) {
+
         forward += 1;
+
     }
 
     if (keys.s) {
+
         forward -= 1;
+
     }
 
     if (keys.d) {
+
         strafe += 1;
+
     }
 
     if (keys.a) {
+
         strafe -= 1;
+
     }
 
     if (
@@ -846,7 +1010,12 @@ function updateMovement(dt) {
 
     let moved = false;
 
-    if (canMoveTo(nextX, player.y)) {
+    if (
+        canMoveTo(
+            nextX,
+            player.y
+        )
+    ) {
 
         player.x = nextX;
 
@@ -854,7 +1023,12 @@ function updateMovement(dt) {
 
     }
 
-    if (canMoveTo(player.x, nextY)) {
+    if (
+        canMoveTo(
+            player.x,
+            nextY
+        )
+    ) {
 
         player.y = nextY;
 
@@ -870,8 +1044,7 @@ function updateMovement(dt) {
 
             playFootstep();
 
-            footstepTimer =
-                0.42;
+            footstepTimer = 0.42;
 
         }
 
@@ -888,7 +1061,8 @@ function findDoor() {
 
     let best = null;
 
-    let bestDistance = Infinity;
+    let bestDistance =
+        Infinity;
 
     for (
         let y = 0;
@@ -905,7 +1079,9 @@ function findDoor() {
             if (
                 MAP[y][x] !== "D"
             ) {
+
                 continue;
+
             }
 
             const dx =
@@ -917,8 +1093,6 @@ function findDoor() {
                 player.y;
 
             const distance =
-
-               
                 Math.hypot(
                     dx,
                     dy
@@ -933,9 +1107,13 @@ function findDoor() {
                     distance;
 
                 best = {
+
                     x: x + 0.5,
+
                     y: y + 0.5,
+
                     distance: distance
+
                 };
 
             }
@@ -950,7 +1128,7 @@ function findDoor() {
 
 
 /* =========================================================
-   INTERACTION
+   INTERACTION DETECTION
 ========================================================= */
 
 function updateInteraction() {
@@ -962,6 +1140,8 @@ function updateInteraction() {
 
         hideInteraction();
 
+        interactionTarget = null;
+
         return;
 
     }
@@ -971,7 +1151,7 @@ function updateInteraction() {
 
     if (
         door &&
-        door.distance < 1.55
+        door.distance < 1.65
     ) {
 
         const dx =
@@ -996,20 +1176,30 @@ function updateInteraction() {
                 )
             );
 
-        if (difference < 0.65) {
+        if (
+            difference < 0.75
+        ) {
 
             interactionTarget =
                 "door";
 
-            interactionMain.textContent =
-                doorOpen
-                    ? "DOOR"
-                    : "OPEN DOOR";
+            if (doorOpen) {
 
-            interactionSub.textContent =
-                doorOpen
-                    ? "The way is open"
-                    : "Press E to interact";
+                interactionMain.textContent =
+                    "DOOR";
+
+                interactionSub.textContent =
+                    "The way is open";
+
+            } else {
+
+                interactionMain.textContent =
+                    "OPEN DOOR";
+
+                interactionSub.textContent =
+                    "Press E or ENTER";
+
+            }
 
             interaction.classList.add(
                 "visible"
@@ -1028,6 +1218,10 @@ function updateInteraction() {
 }
 
 
+/* =========================================================
+   INTERACT
+========================================================= */
+
 function interact() {
 
     if (
@@ -1043,8 +1237,14 @@ function interact() {
 
         doorOpen = true;
 
-        objective.textContent =
-            "Something is waiting beyond.";
+        doorProgress = 1;
+
+        if (objective) {
+
+            objective.textContent =
+                "Something is waiting beyond.";
+
+        }
 
         showMessage(
             "The door opens.",
@@ -1053,20 +1253,26 @@ function interact() {
 
         playDoorSound();
 
-        game.classList.add(
-            "shake"
-        );
+        if (game) {
 
-        setTimeout(
-            function() {
+            game.classList.add(
+                "shake"
+            );
 
-                game.classList.remove(
-                    "shake"
-                );
+            setTimeout(
+                function() {
 
-            },
-            550
-        );
+                    game.classList.remove(
+                        "shake"
+                    );
+
+                },
+                550
+            );
+
+        }
+
+        updateInteraction();
 
         return;
 
@@ -1095,6 +1301,8 @@ function toggleFlashlight() {
             "Find another way."
         );
 
+        updateBatteryUI();
+
         return;
 
     }
@@ -1115,29 +1323,27 @@ function toggleFlashlight() {
 
 }
 
+
+/* =========================================================
+   BATTERY
+========================================================= */
+
 function updateBattery(dt) {
 
     if (!flashlightOn) {
+
         return;
+
     }
 
-    battery -= dt * 0.1111;
+    battery -=
+        dt * 0.1111;
 
-    battery = Math.max(0, battery);
-
-    if (battery <= 0) {
-
-        flashlightOn = false;
-
-        showMessage(
-            "The flashlight dies.",
-            "You are not alone."
+    battery =
+        Math.max(
+            0,
+            battery
         );
-    }
-
-    updateBatteryUI();
-}
-
 
     if (battery <= 0) {
 
@@ -1154,8 +1360,18 @@ function updateBattery(dt) {
 
 }
 
+
+/* =========================================================
+   BATTERY UI
+========================================================= */
 
 function updateBatteryUI() {
+
+    if (!batteryFill) {
+
+        return;
+
+    }
 
     const value =
         Math.max(
@@ -1224,6 +1440,12 @@ function showMessage(
     subText
 ) {
 
+    if (!message) {
+
+        return;
+
+    }
+
     clearTimeout(
         messageTimer
     );
@@ -1259,6 +1481,12 @@ function showMessage(
 
 function hideMessage() {
 
+    if (!message) {
+
+        return;
+
+    }
+
     clearTimeout(
         messageTimer
     );
@@ -1271,6 +1499,12 @@ function hideMessage() {
 
 
 function hideInteraction() {
+
+    if (!interaction) {
+
+        return;
+
+    }
 
     interaction.classList.remove(
         "visible"
@@ -1326,10 +1560,12 @@ function castRay(angle) {
         ) {
 
             return {
+
                 distance,
                 type: "wall",
                 mapX,
                 mapY
+
             };
 
         }
@@ -1340,10 +1576,12 @@ function castRay(angle) {
         if (tile === "#") {
 
             return {
+
                 distance,
                 type: "wall",
                 mapX,
                 mapY
+
             };
 
         }
@@ -1354,10 +1592,12 @@ function castRay(angle) {
         ) {
 
             return {
+
                 distance,
                 type: "door",
                 mapX,
                 mapY
+
             };
 
         }
@@ -1365,8 +1605,11 @@ function castRay(angle) {
     }
 
     return {
+
         distance: maxDistance,
+
         type: "none"
+
     };
 
 }
@@ -1377,6 +1620,12 @@ function castRay(angle) {
 ========================================================= */
 
 function render() {
+
+    if (!canvas || !ctx) {
+
+        return;
+
+    }
 
     const width =
         window.innerWidth;
@@ -1484,7 +1733,9 @@ function drawWorld(
             900,
             Math.max(
                 320,
-                Math.floor(width / 1.5)
+                Math.floor(
+                    width / 1.5
+                )
             )
         );
 
@@ -1594,31 +1845,33 @@ function getWallShade(
 
     if (type === "door") {
 
+        const doorLight =
+            Math.floor(
+                light * 0.55
+            );
+
         return (
             "rgb(" +
-            Math.floor(
-                light * 0.55
-            ) +
+            doorLight +
             "," +
-            Math.floor(
-                light * 0.55
-            ) +
+            doorLight +
             "," +
-            Math.floor(
-                light * 0.55
-            ) +
+            doorLight +
             ")"
         );
 
     }
 
+    const wallLight =
+        Math.floor(light);
+
     return (
         "rgb(" +
-        Math.floor(light) +
+        wallLight +
         "," +
-        Math.floor(light) +
+        wallLight +
         "," +
-        Math.floor(light) +
+        wallLight +
         ")"
     );
 
@@ -1626,13 +1879,18 @@ function getWallShade(
 
 
 /* =========================================================
-   APPARITION SYSTEM
+   HORROR SYSTEM
 ========================================================= */
 
 function updateHorror(dt) {
 
-    if (!gameStarted || paused) {
+    if (
+        !gameStarted ||
+        paused
+    ) {
+
         return;
+
     }
 
     apparitionTimer += dt;
@@ -1644,19 +1902,33 @@ function updateHorror(dt) {
 
         apparitionTimer = 0;
 
-        if (Math.random() < 0.55) {
+        if (
+            Math.random() < 0.55
+        ) {
 
             apparitionActive = true;
 
-            setTimeout(
-                function() {
+            if (apparitionTimeout) {
 
-                    apparitionActive =
-                        false;
+                clearTimeout(
+                    apparitionTimeout
+                );
 
-                },
-                1800
-            );
+            }
+
+            apparitionTimeout =
+                setTimeout(
+                    function() {
+
+                        apparitionActive =
+                            false;
+
+                        apparitionTimeout =
+                            null;
+
+                    },
+                    1800
+                );
 
             playWhisper();
 
@@ -1667,20 +1939,27 @@ function updateHorror(dt) {
 }
 
 
+/* =========================================================
+   APPARITION RENDER
+========================================================= */
+
 function drawApparition(
     width,
     height
 ) {
 
     if (!apparitionActive) {
+
         return;
+
     }
 
     const alpha =
         0.12 +
         Math.sin(
             elapsed * 9
-        ) * 0.025;
+        ) *
+        0.025;
 
     const centerX =
         width / 2;
@@ -1742,9 +2021,15 @@ function drawApparition(
 ========================================================= */
 
 let audioContext = null;
+
 let masterGain = null;
+
 let ambientGain = null;
 
+
+/* =========================================================
+   START AUDIO
+========================================================= */
 
 function startAudio() {
 
@@ -1814,7 +2099,9 @@ function startAudio() {
 function startAmbient() {
 
     if (!audioContext) {
+
         return;
+
     }
 
     const oscillator =
@@ -1878,7 +2165,9 @@ function startAmbient() {
 function playFootstep() {
 
     if (!audioContext) {
+
         return;
+
     }
 
     const now =
@@ -1905,7 +2194,8 @@ function playFootstep() {
 
         const fade =
             1 -
-            i / data.length;
+            i /
+            data.length;
 
         data[i] =
             (
@@ -1982,7 +2272,9 @@ function playFootstep() {
 function playDoorSound() {
 
     if (!audioContext) {
+
         return;
+
     }
 
     const now =
@@ -2048,7 +2340,9 @@ function playDoorSound() {
 function playWhisper() {
 
     if (!audioContext) {
+
         return;
+
     }
 
     const now =
@@ -2141,7 +2435,9 @@ function playWhisper() {
 function playFlashlightClick() {
 
     if (!audioContext) {
+
         return;
+
     }
 
     const now =
@@ -2236,16 +2532,19 @@ function loop(now) {
 }
 
 
-requestAnimationFrame(
-    loop
-);
-
-
 /* =========================================================
    INITIAL STATE
 ========================================================= */
 
 resetGame();
 
-objective.textContent =
-    "Find a way out.";
+if (objective) {
+
+    objective.textContent =
+        "Find a way out.";
+
+}
+
+requestAnimationFrame(
+    loop
+);
