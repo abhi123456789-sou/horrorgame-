@@ -1113,21 +1113,29 @@ function toggleFlashlight() {
 
 }
 
-
 function updateBattery(dt) {
 
     if (!flashlightOn) {
         return;
     }
 
-    battery -=
-        dt * 0.75;
+    battery -= dt * 0.1111;
 
-    battery =
-        Math.max(
-            0,
-            battery
+    battery = Math.max(0, battery);
+
+    if (battery <= 0) {
+
+        flashlightOn = false;
+
+        showMessage(
+            "The flashlight dies.",
+            "You are not alone."
         );
+    }
+
+    updateBatteryUI();
+}
+
 
     if (battery <= 0) {
 
