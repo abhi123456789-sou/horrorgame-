@@ -21,21 +21,16 @@
 
     <title>THE LAST ROOM</title>
 
-    <link
-        rel="stylesheet"
-        href="style.css"
-    >
+    <link rel="stylesheet" href="style.css">
 
 </head>
-
 
 <body>
 
 <div id="game">
 
-
     <!-- =====================================================
-         MAIN GAME CANVAS
+         3D GAME CANVAS
     ====================================================== -->
 
     <canvas id="gameCanvas"></canvas>
@@ -45,23 +40,31 @@
          MAIN MENU
     ====================================================== -->
 
-    <section
-        id="mainMenu"
-        class="screen"
-    >
+    <section id="mainMenu" class="screen">
 
         <div class="menuBox">
 
             <div class="smallTitle">
-                SURVIVAL HORROR
+                AN EXPERIMENT IN PSYCHOLOGICAL HORROR
             </div>
 
             <h1>
-                THE LAST ROOM
+                THE LAST<br>
+                ROOM
             </h1>
 
+            <div class="menuLine"></div>
+
             <p class="menuText">
-                Something is waiting in the dark.
+                You woke up somewhere you don't remember entering.
+            </p>
+
+            <p class="menuText">
+                The electricity is still working.
+            </p>
+
+            <p class="menuText">
+                Nobody should be here.
             </p>
 
             <button
@@ -69,7 +72,7 @@
                 class="menuButton"
                 type="button"
             >
-                ENTER THE ROOM
+                ENTER
             </button>
 
             <button
@@ -86,15 +89,13 @@
 
 
     <!-- =====================================================
-         HUD
+         GAME HUD
     ====================================================== -->
 
     <div id="hud">
 
 
-        <!-- =================================================
-             OBJECTIVE
-        ================================================== -->
+        <!-- OBJECTIVE -->
 
         <div id="objectiveBox">
 
@@ -109,9 +110,7 @@
         </div>
 
 
-        <!-- =================================================
-             PLAYER HEALTH
-        ================================================== -->
+        <!-- PLAYER HEALTH -->
 
         <div id="playerHealthBox">
 
@@ -139,13 +138,11 @@
         </div>
 
 
-        <!-- =================================================
-             STAMINA
-        ================================================== -->
+        <!-- STAMINA -->
 
         <div id="staminaBox">
 
-            <div class="staminaHeader">
+            <div class="healthHeader">
 
                 <span>
                     STAMINA
@@ -168,9 +165,7 @@
         </div>
 
 
-        <!-- =================================================
-             WEAPON HUD
-        ================================================== -->
+        <!-- WEAPON -->
 
         <div id="weaponBox">
 
@@ -189,9 +184,7 @@
         </div>
 
 
-        <!-- =================================================
-             FLASHLIGHT
-        ================================================== -->
+        <!-- FLASHLIGHT -->
 
         <div id="batteryBox">
 
@@ -201,15 +194,11 @@
 
             <div class="battery">
 
-                <div
-                    id="batteryFill"
-                ></div>
+                <div id="batteryFill"></div>
 
             </div>
 
-            <div
-                id="batteryText"
-            >
+            <div id="batteryText">
                 100%
             </div>
 
@@ -218,9 +207,6 @@
 
         <!-- =================================================
              CROSSHAIR
-             
-             ALWAYS VISIBLE
-             ABOVE CANVAS
         ================================================== -->
 
         <div
@@ -228,17 +214,11 @@
             aria-hidden="true"
         >
 
-            <span
-                class="crossHorizontal"
-            ></span>
+            <span class="crossHorizontal"></span>
 
-            <span
-                class="crossVertical"
-            ></span>
+            <span class="crossVertical"></span>
 
-            <span
-                class="crossDot"
-            ></span>
+            <span class="crossDot"></span>
 
         </div>
 
@@ -247,20 +227,14 @@
              INTERACTION
         ================================================== -->
 
-        <div
-            id="interaction"
-        >
+        <div id="interaction">
 
-            <div
-                id="interactionMain"
-            >
+            <div id="interactionMain">
                 OPEN DOOR
             </div>
 
-            <div
-                id="interactionSub"
-            >
-                Press E
+            <div id="interactionSub">
+                PRESS E
             </div>
 
         </div>
@@ -270,38 +244,26 @@
              MESSAGE
         ================================================== -->
 
-        <div
-            id="message"
-        ></div>
+        <div id="message"></div>
 
 
         <!-- =================================================
              ENEMY HEALTH
         ================================================== -->
 
-        <div
-            id="enemyHealthBox"
-        >
+        <div id="enemyHealthBox">
 
-            <div
-                id="enemyName"
-            >
+            <div id="enemyName">
                 ZOMBIE
             </div>
 
-            <div
-                class="enemyHealthBar"
-            >
+            <div class="enemyHealthBar">
 
-                <div
-                    id="enemyHealthFill"
-                ></div>
+                <div id="enemyHealthFill"></div>
 
             </div>
 
-            <div
-                id="enemyHealthText"
-            >
+            <div id="enemyHealthText">
                 100
             </div>
 
@@ -324,12 +286,11 @@
 
         </div>
 
-
     </div>
 
 
     <!-- =====================================================
-         DAMAGE VIGNETTE
+         DAMAGE EFFECT
     ====================================================== -->
 
     <div
@@ -349,49 +310,52 @@
 
 
     <!-- =====================================================
+         WEAPON VIEW MODEL
+    ====================================================== -->
+
+    <div id="weaponView">
+
+        <div id="weaponModel">
+
+            <div class="weaponBody"></div>
+
+            <div class="weaponBarrel"></div>
+
+            <div class="weaponGrip"></div>
+
+            <div class="weaponSight"></div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
          MOBILE CONTROLS
     ====================================================== -->
 
-    <div
-        id="mobileControls"
-    >
+    <div id="mobileControls">
 
 
-        <!-- ================================================
-             LEFT MOVEMENT JOYSTICK
-        ================================================= -->
+        <!-- LEFT JOYSTICK -->
 
-        <div
-            id="joystickArea"
-        >
+        <div id="joystickArea">
 
-            <div
-                id="joystickBase"
-            >
+            <div id="joystickBase">
 
-                <div
-                    id="joystickKnob"
-                ></div>
+                <div id="joystickKnob"></div>
 
             </div>
 
         </div>
 
 
-        <!-- ================================================
-             RIGHT LOOK AREA
+        <!-- RIGHT SIDE LOOK AREA -->
 
-             JavaScript captures touch movement here
-        ================================================= -->
-
-        <div
-            id="lookArea"
-        ></div>
+        <div id="lookArea"></div>
 
 
-        <!-- ================================================
-             FIRE
-        ================================================= -->
+        <!-- SHOOT -->
 
         <button
             id="mobileShoot"
@@ -402,9 +366,7 @@
         </button>
 
 
-        <!-- ================================================
-             AIM
-        ================================================= -->
+        <!-- AIM -->
 
         <button
             id="mobileAim"
@@ -415,9 +377,7 @@
         </button>
 
 
-        <!-- ================================================
-             JUMP
-        ================================================= -->
+        <!-- JUMP -->
 
         <button
             id="mobileJump"
@@ -428,9 +388,7 @@
         </button>
 
 
-        <!-- ================================================
-             CROUCH / CRAWL
-        ================================================= -->
+        <!-- CROUCH -->
 
         <button
             id="mobileCrouch"
@@ -441,9 +399,7 @@
         </button>
 
 
-        <!-- ================================================
-             INTERACT
-        ================================================= -->
+        <!-- INTERACT -->
 
         <button
             id="mobileInteract"
@@ -454,9 +410,7 @@
         </button>
 
 
-        <!-- ================================================
-             FLASHLIGHT
-        ================================================= -->
+        <!-- FLASHLIGHT -->
 
         <button
             id="mobileFlashlight"
@@ -467,9 +421,7 @@
         </button>
 
 
-        <!-- ================================================
-             RELOAD
-        ================================================= -->
+        <!-- RELOAD -->
 
         <button
             id="mobileReload"
@@ -480,13 +432,9 @@
         </button>
 
 
-        <!-- ================================================
-             WEAPON SWITCH
-        ================================================= -->
+        <!-- WEAPONS -->
 
-        <div
-            id="mobileWeapons"
-        >
+        <div id="mobileWeapons">
 
             <button
                 type="button"
@@ -511,18 +459,21 @@
 
         </div>
 
-
     </div>
 
 
     <!-- =====================================================
-         PC WEAPON QUICK SELECT
+         PC WEAPON INFORMATION
     ====================================================== -->
 
-    <div
-        id="pcWeaponHint"
-    >
-        1 PISTOL &nbsp; 2 SHOTGUN &nbsp; 3 SMG
+    <div id="pcWeaponHint">
+
+        1 PISTOL
+        &nbsp;&nbsp;
+        2 SHOTGUN
+        &nbsp;&nbsp;
+        3 SMG
+
     </div>
 
 
@@ -586,7 +537,7 @@
         <div class="controlsBox">
 
             <div class="smallTitle">
-                HOW TO SURVIVE
+                SURVIVAL GUIDE
             </div>
 
             <h2>
@@ -594,14 +545,10 @@
             </h2>
 
 
-            <div
-                class="controlColumns"
-            >
+            <div class="controlColumns">
 
 
-                <!-- ========================================
-                     PC CONTROLS
-                ========================================= -->
+                <!-- PC -->
 
                 <div class="controlColumn">
 
@@ -611,70 +558,68 @@
 
                     <p>
                         <b>W A S D</b>
-                        <span>Move</span>
+                        <span>MOVE</span>
                     </p>
 
                     <p>
                         <b>MOUSE</b>
-                        <span>Look</span>
+                        <span>LOOK</span>
                     </p>
 
                     <p>
                         <b>LEFT CLICK</b>
-                        <span>Shoot</span>
+                        <span>SHOOT</span>
                     </p>
 
                     <p>
                         <b>RIGHT CLICK</b>
-                        <span>Aim</span>
+                        <span>AIM</span>
                     </p>
 
                     <p>
                         <b>SPACE</b>
-                        <span>Jump</span>
+                        <span>JUMP</span>
                     </p>
 
                     <p>
                         <b>C</b>
-                        <span>Crouch / Crawl</span>
+                        <span>CROUCH / CRAWL</span>
                     </p>
 
                     <p>
                         <b>SHIFT</b>
-                        <span>Sprint</span>
+                        <span>SPRINT</span>
                     </p>
 
                     <p>
                         <b>R</b>
-                        <span>Reload</span>
+                        <span>RELOAD</span>
                     </p>
 
                     <p>
                         <b>F</b>
-                        <span>Flashlight</span>
+                        <span>FLASHLIGHT</span>
                     </p>
 
                     <p>
                         <b>E / ENTER</b>
-                        <span>Interact</span>
+                        <span>INTERACT</span>
                     </p>
 
                     <p>
                         <b>1 / 2 / 3</b>
-                        <span>Weapons</span>
+                        <span>WEAPON</span>
                     </p>
 
                     <p>
                         <b>ESC</b>
-                        <span>Pause</span>
+                        <span>PAUSE</span>
                     </p>
 
                 </div>
 
 
-                <!-- ========================================
-                     MOBILE CONTROLS
-                ========================================= -->
+                <!-- MOBILE -->
 
                 <div class="controlColumn">
 
@@ -683,57 +628,56 @@
                     </h3>
 
                     <p>
-                        <b>LEFT JOYSTICK</b>
-                        <span>Move</span>
+                        <b>JOYSTICK</b>
+                        <span>MOVE</span>
                     </p>
 
                     <p>
-                        <b>RIGHT SWIPE</b>
-                        <span>Look</span>
+                        <b>SWIPE</b>
+                        <span>LOOK</span>
                     </p>
 
                     <p>
                         <b>FIRE</b>
-                        <span>Shoot</span>
+                        <span>SHOOT</span>
                     </p>
 
                     <p>
                         <b>AIM</b>
-                        <span>Aim</span>
+                        <span>AIM</span>
                     </p>
 
                     <p>
                         <b>JUMP</b>
-                        <span>Jump</span>
+                        <span>JUMP</span>
                     </p>
 
                     <p>
                         <b>CROUCH</b>
-                        <span>Crawl</span>
+                        <span>CRAWL</span>
                     </p>
 
                     <p>
                         <b>RELOAD</b>
-                        <span>Reload</span>
+                        <span>RELOAD</span>
                     </p>
 
                     <p>
                         <b>USE</b>
-                        <span>Interact</span>
+                        <span>INTERACT</span>
                     </p>
 
                     <p>
                         <b>LIGHT</b>
-                        <span>Flashlight</span>
+                        <span>FLASHLIGHT</span>
                     </p>
 
                     <p>
                         <b>1 / 2 / 3</b>
-                        <span>Weapons</span>
+                        <span>WEAPON</span>
                     </p>
 
                 </div>
-
 
             </div>
 
@@ -752,7 +696,7 @@
 
 
     <!-- =====================================================
-         LOADING / START MESSAGE
+         LOADING
     ====================================================== -->
 
     <div
@@ -764,7 +708,7 @@
 
 
     <!-- =====================================================
-         JAVASCRIPT
+         GAME JAVASCRIPT
     ====================================================== -->
 
     <script
