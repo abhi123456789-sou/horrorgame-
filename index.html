@@ -8,9 +8,10 @@
     <meta
         name="viewport"
         content="width=device-width,
-                 initial-scale=1.0,
-                 maximum-scale=1.0,
-                 user-scalable=no"
+        initial-scale=1.0,
+        maximum-scale=1.0,
+        user-scalable=no,
+        viewport-fit=cover"
     >
 
     <meta
@@ -18,9 +19,7 @@
         content="#000000"
     >
 
-    <title>
-        THE LAST ROOM
-    </title>
+    <title>THE LAST ROOM</title>
 
     <link
         rel="stylesheet"
@@ -36,21 +35,54 @@
 
 
     <!-- =====================================================
-         GAME CANVAS
+         MAIN GAME CANVAS
     ====================================================== -->
 
     <canvas id="gameCanvas"></canvas>
 
 
     <!-- =====================================================
-         CROSSHAIR
+         MAIN MENU
     ====================================================== -->
 
-    <div id="crosshair">
+    <section
+        id="mainMenu"
+        class="screen"
+    >
 
-        <span></span>
+        <div class="menuBox">
 
-    </div>
+            <div class="smallTitle">
+                SURVIVAL HORROR
+            </div>
+
+            <h1>
+                THE LAST ROOM
+            </h1>
+
+            <p class="menuText">
+                Something is waiting in the dark.
+            </p>
+
+            <button
+                id="startButton"
+                class="menuButton"
+                type="button"
+            >
+                ENTER THE ROOM
+            </button>
+
+            <button
+                id="controlsButton"
+                class="menuButton secondary"
+                type="button"
+            >
+                CONTROLS
+            </button>
+
+        </div>
+
+    </section>
 
 
     <!-- =====================================================
@@ -60,53 +92,123 @@
     <div id="hud">
 
 
-        <!-- PLAYER HEALTH -->
+        <!-- =================================================
+             OBJECTIVE
+        ================================================== -->
 
-        <div id="health">
+        <div id="objectiveBox">
 
-            <div class="hudTitle">
-                HEALTH
+            <div class="hudLabel">
+                OBJECTIVE
             </div>
 
-            <div class="bar">
-
-                <div
-                    id="healthFill"
-                    class="healthFill"
-                ></div>
-
-            </div>
-
-            <div
-                id="healthText"
-                class="hudValue"
-            >
-                100 / 100
+            <div id="objective">
+                Find a way out.
             </div>
 
         </div>
 
 
-        <!-- FLASHLIGHT BATTERY -->
+        <!-- =================================================
+             PLAYER HEALTH
+        ================================================== -->
 
-        <div id="battery">
+        <div id="playerHealthBox">
 
-            <div class="hudTitle">
-                BATTERY
+            <div class="healthHeader">
+
+                <span>
+                    HEALTH
+                </span>
+
+                <span id="healthText">
+                    100
+                </span>
+
             </div>
 
-            <div class="bar">
+            <div class="healthBar">
+
+                <div
+                    id="playerHealthFill"
+                    class="healthFill"
+                ></div>
+
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             STAMINA
+        ================================================== -->
+
+        <div id="staminaBox">
+
+            <div class="staminaHeader">
+
+                <span>
+                    STAMINA
+                </span>
+
+                <span id="staminaText">
+                    100
+                </span>
+
+            </div>
+
+            <div class="staminaBar">
+
+                <div
+                    id="staminaFill"
+                ></div>
+
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             WEAPON HUD
+        ================================================== -->
+
+        <div id="weaponBox">
+
+            <div id="weaponName">
+                PISTOL
+            </div>
+
+            <div id="weaponStatus">
+                READY
+            </div>
+
+            <div id="ammoText">
+                12 / 60
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             FLASHLIGHT
+        ================================================== -->
+
+        <div id="batteryBox">
+
+            <div class="batteryTitle">
+                FLASHLIGHT
+            </div>
+
+            <div class="battery">
 
                 <div
                     id="batteryFill"
-                    class="batteryFill"
                 ></div>
 
             </div>
 
             <div
                 id="batteryText"
-                class="hudValue"
             >
                 100%
             </div>
@@ -114,145 +216,298 @@
         </div>
 
 
-        <!-- OBJECTIVE -->
+        <!-- =================================================
+             CROSSHAIR
+             
+             ALWAYS VISIBLE
+             ABOVE CANVAS
+        ================================================== -->
 
-        <div id="objective">
+        <div
+            id="crosshair"
+            aria-hidden="true"
+        >
 
-            Find a way out.
+            <span
+                class="crossHorizontal"
+            ></span>
 
-        </div>
+            <span
+                class="crossVertical"
+            ></span>
 
-
-        <!-- WEAPON -->
-
-        <div id="weapon">
-
-            <div
-                id="weaponName"
-            >
-                PISTOL
-            </div>
-
-            <div
-                id="ammo"
-            >
-                12 / 48
-            </div>
-
-        </div>
-
-
-        <!-- MESSAGE -->
-
-        <div id="message">
+            <span
+                class="crossDot"
+            ></span>
 
         </div>
 
 
-        <!-- INTERACTION -->
+        <!-- =================================================
+             INTERACTION
+        ================================================== -->
 
-        <div id="interaction">
+        <div
+            id="interaction"
+        >
 
             <div
                 id="interactionMain"
             >
+                OPEN DOOR
             </div>
 
-            <small
+            <div
                 id="interactionSub"
             >
-            </small>
+                Press E
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             MESSAGE
+        ================================================== -->
+
+        <div
+            id="message"
+        ></div>
+
+
+        <!-- =================================================
+             ENEMY HEALTH
+        ================================================== -->
+
+        <div
+            id="enemyHealthBox"
+        >
+
+            <div
+                id="enemyName"
+            >
+                ZOMBIE
+            </div>
+
+            <div
+                class="enemyHealthBar"
+            >
+
+                <div
+                    id="enemyHealthFill"
+                ></div>
+
+            </div>
+
+            <div
+                id="enemyHealthText"
+            >
+                100
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             HIT MARKER
+        ================================================== -->
+
+        <div
+            id="hitMarker"
+            aria-hidden="true"
+        >
+
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
 
         </div>
 
 
     </div>
 
+
+    <!-- =====================================================
+         DAMAGE VIGNETTE
+    ====================================================== -->
+
+    <div
+        id="damageOverlay"
+        aria-hidden="true"
+    ></div>
+
+
+    <!-- =====================================================
+         MUZZLE FLASH
+    ====================================================== -->
+
+    <div
+        id="muzzleFlash"
+        aria-hidden="true"
+    ></div>
 
 
     <!-- =====================================================
          MOBILE CONTROLS
     ====================================================== -->
 
-    <div id="mobile">
+    <div
+        id="mobileControls"
+    >
 
 
-        <!-- VIRTUAL JOYSTICK -->
+        <!-- ================================================
+             LEFT MOVEMENT JOYSTICK
+        ================================================= -->
 
-        <div id="joy">
+        <div
+            id="joystickArea"
+        >
 
-            <div id="knob"></div>
+            <div
+                id="joystickBase"
+            >
+
+                <div
+                    id="joystickKnob"
+                ></div>
+
+            </div>
 
         </div>
 
 
-        <!-- MOBILE LOOK AREA -->
+        <!-- ================================================
+             RIGHT LOOK AREA
 
-        <div id="look">
+             JavaScript captures touch movement here
+        ================================================= -->
 
-        </div>
+        <div
+            id="lookArea"
+        ></div>
 
 
-        <!-- MOBILE ACTION BUTTONS -->
+        <!-- ================================================
+             FIRE
+        ================================================= -->
 
-        <div id="buttons">
+        <button
+            id="mobileShoot"
+            class="mobileAction shoot"
+            type="button"
+        >
+            FIRE
+        </button>
 
+
+        <!-- ================================================
+             AIM
+        ================================================= -->
+
+        <button
+            id="mobileAim"
+            class="mobileAction aim"
+            type="button"
+        >
+            AIM
+        </button>
+
+
+        <!-- ================================================
+             JUMP
+        ================================================= -->
+
+        <button
+            id="mobileJump"
+            class="mobileAction jump"
+            type="button"
+        >
+            JUMP
+        </button>
+
+
+        <!-- ================================================
+             CROUCH / CRAWL
+        ================================================= -->
+
+        <button
+            id="mobileCrouch"
+            class="mobileAction crouch"
+            type="button"
+        >
+            CROUCH
+        </button>
+
+
+        <!-- ================================================
+             INTERACT
+        ================================================= -->
+
+        <button
+            id="mobileInteract"
+            class="mobileAction interact"
+            type="button"
+        >
+            USE
+        </button>
+
+
+        <!-- ================================================
+             FLASHLIGHT
+        ================================================= -->
+
+        <button
+            id="mobileFlashlight"
+            class="mobileAction flashlight"
+            type="button"
+        >
+            LIGHT
+        </button>
+
+
+        <!-- ================================================
+             RELOAD
+        ================================================= -->
+
+        <button
+            id="mobileReload"
+            class="mobileAction reload"
+            type="button"
+        >
+            RELOAD
+        </button>
+
+
+        <!-- ================================================
+             WEAPON SWITCH
+        ================================================= -->
+
+        <div
+            id="mobileWeapons"
+        >
 
             <button
-                id="fire"
-                class="mobileButton fireButton"
+                type="button"
+                data-weapon="0"
             >
-                FIRE
+                1
             </button>
-
 
             <button
-                id="reload"
-                class="mobileButton"
+                type="button"
+                data-weapon="1"
             >
-                R
+                2
             </button>
-
 
             <button
-                id="jump"
-                class="mobileButton"
+                type="button"
+                data-weapon="2"
             >
-                JUMP
+                3
             </button>
-
-
-            <button
-                id="crouch"
-                class="mobileButton"
-            >
-                CROUCH
-            </button>
-
-
-            <button
-                id="light"
-                class="mobileButton"
-            >
-                LIGHT
-            </button>
-
-
-            <button
-                id="interact"
-                class="mobileButton"
-            >
-                E
-            </button>
-
-
-            <button
-                id="gun"
-                class="mobileButton"
-            >
-                GUN
-            </button>
-
 
         </div>
 
@@ -260,65 +515,15 @@
     </div>
 
 
-
     <!-- =====================================================
-         MAIN MENU
+         PC WEAPON QUICK SELECT
     ====================================================== -->
 
-    <section
-        id="menu"
-        class="screen"
+    <div
+        id="pcWeaponHint"
     >
-
-        <div class="panel">
-
-
-            <div class="subtitle">
-
-                SURVIVAL HORROR
-
-            </div>
-
-
-            <h1>
-
-                THE LAST ROOM
-
-            </h1>
-
-
-            <p>
-
-                Something is waiting
-                in the dark.
-
-            </p>
-
-
-            <button
-                id="start"
-                class="menuButton"
-            >
-
-                ENTER
-
-            </button>
-
-
-            <button
-                id="controls"
-                class="menuButton secondary"
-            >
-
-                CONTROLS
-
-            </button>
-
-
-        </div>
-
-    </section>
-
+        1 PISTOL &nbsp; 2 SHOTGUN &nbsp; 3 SMG
+    </div>
 
 
     <!-- =====================================================
@@ -326,343 +531,249 @@
     ====================================================== -->
 
     <section
-        id="pause"
+        id="pauseMenu"
         class="screen hidden"
     >
 
-        <div class="panel">
+        <div class="menuBox">
 
-
-            <div class="subtitle">
-
-                THE ROOM IS STILL HERE
-
+            <div class="smallTitle">
+                GAME PAUSED
             </div>
-
 
             <h2>
-
-                PAUSED
-
-            </h2>
-
-
-            <button
-                id="resume"
-                class="menuButton"
-            >
-
-                RESUME
-
-            </button>
-
-
-            <button
-                id="restart"
-                class="menuButton secondary"
-            >
-
-                RESTART
-
-            </button>
-
-
-            <button
-                id="pcontrols"
-                class="menuButton secondary"
-            >
-
-                CONTROLS
-
-            </button>
-
-
-        </div>
-
-    </section>
-
-
-
-    <!-- =====================================================
-         CONTROLS SCREEN
-    ====================================================== -->
-
-    <section
-        id="help"
-        class="screen hidden"
-    >
-
-        <div class="panel controlsPanel">
-
-
-            <div class="subtitle">
-
-                SURVIVAL GUIDE
-
-            </div>
-
-
-            <h2>
-
-                CONTROLS
-
-            </h2>
-
-
-            <div class="controlList">
-
-
-                <div>
-
-                    <b>
-                        W A S D
-                    </b>
-
-                    <span>
-                        Move
-                    </span>
-
-                </div>
-
-
-                <div>
-
-                    <b>
-                        MOUSE
-                    </b>
-
-                    <span>
-                        Look
-                    </span>
-
-                </div>
-
-
-                <div>
-
-                    <b>
-                        LEFT CLICK
-                    </b>
-
-                    <span>
-                        Shoot
-                    </span>
-
-                </div>
-
-
-                <div>
-
-                    <b>
-                        RIGHT CLICK
-                    </b>
-
-                    <span>
-                        Interact
-                    </span>
-
-                </div>
-
-
-                <div>
-
-                    <b>
-                        E / ENTER
-                    </b>
-
-                    <span>
-                        Interact
-                    </span>
-
-                </div>
-
-
-                <div>
-
-                    <b>
-                        SPACE
-                    </b>
-
-                    <span>
-                        Jump
-                    </span>
-
-                </div>
-
-
-                <div>
-
-                    <b>
-                        C
-                    </b>
-
-                    <span>
-                        Crouch
-                    </span>
-
-                </div>
-
-
-                <div>
-
-                    <b>
-                        F
-                    </b>
-
-                    <span>
-                        Flashlight
-                    </span>
-
-                </div>
-
-
-                <div>
-
-                    <b>
-                        R
-                    </b>
-
-                    <span>
-                        Reload
-                    </span>
-
-                </div>
-
-
-                <div>
-
-                    <b>
-                        1 / 2 / 3
-                    </b>
-
-                    <span>
-                        Weapons
-                    </span>
-
-                </div>
-
-
-                <div>
-
-                    <b>
-                        ESC
-                    </b>
-
-                    <span>
-                        Pause
-                    </span>
-
-                </div>
-
-
-            </div>
-
-
-            <div class="mobileHelp">
-
-                <h3>
-                    MOBILE
-                </h3>
-
-                <p>
-
-                    Left joystick =
-                    movement
-
-                    <br>
-
-                    Right side =
-                    camera look
-
-                    <br>
-
-                    Buttons =
-                    actions
-
-                </p>
-
-            </div>
-
-
-            <button
-                id="close"
-                class="menuButton"
-            >
-
-                CLOSE
-
-            </button>
-
-
-        </div>
-
-    </section>
-
-
-
-    <!-- =====================================================
-         GAME OVER / WIN SCREEN
-    ====================================================== -->
-
-    <section
-        id="over"
-        class="screen hidden"
-    >
-
-        <div class="panel">
-
-
-            <div class="subtitle">
-
                 THE LAST ROOM
-
-            </div>
-
-
-            <h2
-                id="overTitle"
-            >
-
-                YOU DIED
-
             </h2>
 
-
-            <p
-                id="overText"
-            >
-
-                The infected found you.
-
-            </p>
-
-
             <button
-                id="again"
+                id="resumeButton"
                 class="menuButton"
+                type="button"
             >
-
-                TRY AGAIN
-
+                RESUME
             </button>
 
+            <button
+                id="pauseControlsButton"
+                class="menuButton secondary"
+                type="button"
+            >
+                CONTROLS
+            </button>
+
+            <button
+                id="restartButton"
+                class="menuButton danger"
+                type="button"
+            >
+                RESTART
+            </button>
 
         </div>
 
     </section>
+
+
+    <!-- =====================================================
+         CONTROLS PANEL
+    ====================================================== -->
+
+    <section
+        id="controlsPanel"
+        class="screen hidden"
+    >
+
+        <div class="controlsBox">
+
+            <div class="smallTitle">
+                HOW TO SURVIVE
+            </div>
+
+            <h2>
+                CONTROLS
+            </h2>
+
+
+            <div
+                class="controlColumns"
+            >
+
+
+                <!-- ========================================
+                     PC CONTROLS
+                ========================================= -->
+
+                <div class="controlColumn">
+
+                    <h3>
+                        PC
+                    </h3>
+
+                    <p>
+                        <b>W A S D</b>
+                        <span>Move</span>
+                    </p>
+
+                    <p>
+                        <b>MOUSE</b>
+                        <span>Look</span>
+                    </p>
+
+                    <p>
+                        <b>LEFT CLICK</b>
+                        <span>Shoot</span>
+                    </p>
+
+                    <p>
+                        <b>RIGHT CLICK</b>
+                        <span>Aim</span>
+                    </p>
+
+                    <p>
+                        <b>SPACE</b>
+                        <span>Jump</span>
+                    </p>
+
+                    <p>
+                        <b>C</b>
+                        <span>Crouch / Crawl</span>
+                    </p>
+
+                    <p>
+                        <b>SHIFT</b>
+                        <span>Sprint</span>
+                    </p>
+
+                    <p>
+                        <b>R</b>
+                        <span>Reload</span>
+                    </p>
+
+                    <p>
+                        <b>F</b>
+                        <span>Flashlight</span>
+                    </p>
+
+                    <p>
+                        <b>E / ENTER</b>
+                        <span>Interact</span>
+                    </p>
+
+                    <p>
+                        <b>1 / 2 / 3</b>
+                        <span>Weapons</span>
+                    </p>
+
+                    <p>
+                        <b>ESC</b>
+                        <span>Pause</span>
+                    </p>
+
+                </div>
+
+
+                <!-- ========================================
+                     MOBILE CONTROLS
+                ========================================= -->
+
+                <div class="controlColumn">
+
+                    <h3>
+                        MOBILE
+                    </h3>
+
+                    <p>
+                        <b>LEFT JOYSTICK</b>
+                        <span>Move</span>
+                    </p>
+
+                    <p>
+                        <b>RIGHT SWIPE</b>
+                        <span>Look</span>
+                    </p>
+
+                    <p>
+                        <b>FIRE</b>
+                        <span>Shoot</span>
+                    </p>
+
+                    <p>
+                        <b>AIM</b>
+                        <span>Aim</span>
+                    </p>
+
+                    <p>
+                        <b>JUMP</b>
+                        <span>Jump</span>
+                    </p>
+
+                    <p>
+                        <b>CROUCH</b>
+                        <span>Crawl</span>
+                    </p>
+
+                    <p>
+                        <b>RELOAD</b>
+                        <span>Reload</span>
+                    </p>
+
+                    <p>
+                        <b>USE</b>
+                        <span>Interact</span>
+                    </p>
+
+                    <p>
+                        <b>LIGHT</b>
+                        <span>Flashlight</span>
+                    </p>
+
+                    <p>
+                        <b>1 / 2 / 3</b>
+                        <span>Weapons</span>
+                    </p>
+
+                </div>
+
+
+            </div>
+
+
+            <button
+                id="closeControls"
+                class="menuButton"
+                type="button"
+            >
+                CLOSE
+            </button>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         LOADING / START MESSAGE
+    ====================================================== -->
+
+    <div
+        id="loadingMessage"
+        class="hidden"
+    >
+        LOADING...
+    </div>
+
+
+    <!-- =====================================================
+         JAVASCRIPT
+    ====================================================== -->
+
+    <script
+        src="game.js"
+        defer
+    ></script>
 
 
 </div>
-
-
-<!-- =========================================================
-     JAVASCRIPT
-========================================================= -->
-
-<script
-    src="game.js"
-></script>
-
 
 </body>
 
