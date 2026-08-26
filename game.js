@@ -2,7 +2,7 @@
 
 /* =========================================================
    THE LAST ROOM
-   COMPLETE / CLEAN GAME.JS
+   COMPLETE / CORRECTED GAME.JS
 
    Controls:
    W A S D = Move
@@ -61,35 +61,19 @@ const batteryFill =
 
 
 /* =========================================================
-   SAFETY CHECK
+   BASIC SAFETY
 ========================================================= */
 
-const requiredElements = [
-    canvas,
-    game,
-    mainMenu,
-    pauseMenu,
-    controlsPanel,
-    startButton,
-    controlsButton,
-    pauseControlsButton,
-    closeControls,
-    resumeButton,
-    restartButton,
-    message,
-    objective,
-    interaction,
-    interactionMain,
-    interactionSub,
-    batteryFill
-];
-
-if (requiredElements.some(element => !element)) {
-
+if (!canvas || !ctx) {
     console.error(
-        "THE LAST ROOM: One or more required HTML elements are missing."
+        "THE LAST ROOM: gameCanvas was not found."
     );
+}
 
+if (!game) {
+    console.warn(
+        "THE LAST ROOM: #game element was not found."
+    );
 }
 
 
@@ -108,17 +92,23 @@ function resizeCanvas() {
         2
     );
 
+    const width =
+        Math.max(1, window.innerWidth);
+
+    const height =
+        Math.max(1, window.innerHeight);
+
     canvas.width =
-        Math.floor(window.innerWidth * dpr);
+        Math.floor(width * dpr);
 
     canvas.height =
-        Math.floor(window.innerHeight * dpr);
+        Math.floor(height * dpr);
 
     canvas.style.width =
-        window.innerWidth + "px";
+        width + "px";
 
     canvas.style.height =
-        window.innerHeight + "px";
+        height + "px";
 
     ctx.setTransform(
         dpr,
@@ -143,7 +133,6 @@ resizeCanvas();
 ========================================================= */
 
 const MAP = [
-
     "###############",
     "#.............#",
     "#.............#",
@@ -156,13 +145,16 @@ const MAP = [
     "#.............#",
     "#.............#",
     "###############"
-
 ];
 
-const MAP_WIDTH = MAP[0].length;
-const MAP_HEIGHT = MAP.length;
+const MAP_WIDTH =
+    MAP[0].length;
 
-const FOV = Math.PI / 3;
+const MAP_HEIGHT =
+    MAP.length;
+
+const FOV =
+    Math.PI / 3;
 
 
 /* =========================================================
@@ -172,6 +164,7 @@ const FOV = Math.PI / 3;
 const player = {
 
     x: 2.5,
+
     y: 2.5,
 
     angle: Math.PI / 2,
@@ -186,18 +179,23 @@ const player = {
 ========================================================= */
 
 let gameStarted = false;
+
 let paused = false;
 
 let doorOpen = false;
+
 let doorProgress = 0;
 
 let flashlightOn = true;
+
 let battery = 100;
 
 let elapsed = 0;
 
 let apparitionActive = false;
+
 let apparitionTimer = 0;
+
 let apparitionTimeout = null;
 
 let interactionTarget = null;
@@ -216,11 +214,39 @@ let pointerLockPending = false;
 const keys = {
 
     w: false,
+
     a: false,
+
     s: false,
+
     d: false
 
 };
+
+
+/* =========================================================
+   AUDIO STATE
+========================================================= */
+
+let audioContext = null;
+
+let masterGain = null;
+
+let ambientGain = null;
+
+
+/* =========================================================
+   RESET KEYS
+========================================================= */
+
+function resetKeys() {
+
+    keys.w = false;
+    keys.a = false;
+    keys.s = false;
+    keys.d = false;
+
+}
 
 
 /* =========================================================
@@ -230,33 +256,36 @@ const keys = {
 function resetGame() {
 
     player.x = 2.5;
+
     player.y = 2.5;
 
     player.angle = Math.PI / 2;
 
     doorOpen = false;
+
     doorProgress = 0;
 
     flashlightOn = true;
+
     battery = 100;
 
     elapsed = 0;
 
     apparitionActive = false;
+
     apparitionTimer = 0;
 
     interactionTarget = null;
 
     footstepTimer = 0;
 
-    keys.w = false;
-    keys.a = false;
-    keys.s = false;
-    keys.d = false;
+    resetKeys();
 
-    if (apparitionTimeout) {
+    if (apparitionTimeout !== null) {
 
-        clearTimeout(apparitionTimeout);
+        clearTimeout(
+            apparitionTimeout
+        );
 
         apparitionTimeout = null;
 
@@ -264,14 +293,16 @@ function resetGame() {
 
     updateBatteryUI();
 
+    hideInteraction();
+
+    hideMessage();
+
     if (objective) {
 
         objective.textContent =
             "Find a way out.";
 
     }
-
-    hideInteraction();
 
 }
 
@@ -324,7 +355,8 @@ window.addEventListener(
         if (
             key === "f" &&
             gameStarted &&
-            !paused
+            !paused &&
+            !event.repeat
         ) {
 
             event.preventDefault();
@@ -338,13 +370,16 @@ window.addEventListener(
 
         /* -----------------------------------------
            INTERACTION
-           E OR ENTER
         ----------------------------------------- */
 
         if (
-            (key === "e" || key === "enter") &&
+            (
+                key === "e" ||
+                key === "enter"
+            ) &&
             gameStarted &&
-            !paused
+            !paused &&
+            !event.repeat
         ) {
 
             event.preventDefault();
@@ -371,14 +406,20 @@ window.addEventListener(
 
             if (
                 controlsPanel &&
-                controlsPanel.classList.contains("hidden")
+                !controlsPanel.classList.contains(
+                    "hidden"
+                )
             ) {
 
-                togglePause();
+                controlsPanel.classList.add(
+                    "hidden"
+                );
+
+                return;
 
             }
 
-            return;
+            togglePause();
 
         }
 
@@ -398,27 +439,19 @@ window.addEventListener(
             event.key.toLowerCase();
 
         if (key === "w") {
-
             keys.w = false;
-
         }
 
         if (key === "a") {
-
             keys.a = false;
-
         }
 
         if (key === "s") {
-
             keys.s = false;
-
         }
 
         if (key === "d") {
-
             keys.d = false;
-
         }
 
     }
@@ -426,18 +459,14 @@ window.addEventListener(
 
 
 /* =========================================================
-   WINDOW BLUR
-   Prevent stuck movement keys
+   BLUR
 ========================================================= */
 
 window.addEventListener(
     "blur",
     function() {
 
-        keys.w = false;
-        keys.a = false;
-        keys.s = false;
-        keys.d = false;
+        resetKeys();
 
     }
 );
@@ -451,7 +480,10 @@ document.addEventListener(
     "mousemove",
     function(event) {
 
-        if (!gameStarted || paused) {
+        if (
+            !gameStarted ||
+            paused
+        ) {
 
             return;
 
@@ -469,6 +501,26 @@ document.addEventListener(
         player.angle +=
             event.movementX * 0.0024;
 
+        if (
+            player.angle >
+            Math.PI * 2
+        ) {
+
+            player.angle -=
+                Math.PI * 2;
+
+        }
+
+        if (
+            player.angle <
+            -Math.PI * 2
+        ) {
+
+            player.angle +=
+                Math.PI * 2;
+
+        }
+
     }
 );
 
@@ -479,14 +531,17 @@ document.addEventListener(
 
 function requestGamePointerLock() {
 
-    if (!gameStarted || paused) {
+    if (
+        !gameStarted ||
+        paused ||
+        !canvas
+    ) {
 
         return;
 
     }
 
     if (
-        !canvas ||
         typeof canvas.requestPointerLock !==
         "function"
     ) {
@@ -526,7 +581,7 @@ function requestGamePointerLock() {
             result.catch(
                 function() {
 
-                    /* Pointer lock optional */
+                    pointerLockPending = false;
 
                 }
             );
@@ -535,8 +590,11 @@ function requestGamePointerLock() {
 
     } catch (error) {
 
+        pointerLockPending = false;
+
         console.warn(
-            "Pointer lock unavailable."
+            "Pointer lock unavailable.",
+            error
         );
 
     }
@@ -649,6 +707,7 @@ function startGame() {
     }
 
     gameStarted = true;
+
     paused = false;
 
     resetGame();
@@ -658,16 +717,22 @@ function startGame() {
         mainMenu.style.transition =
             "opacity 0.7s ease";
 
-        mainMenu.style.opacity = "0";
+        mainMenu.style.opacity =
+            "0";
 
         setTimeout(
             function() {
 
-                mainMenu.classList.add(
-                    "hidden"
-                );
+                if (mainMenu) {
 
-                mainMenu.style.opacity = "";
+                    mainMenu.classList.add(
+                        "hidden"
+                    );
+
+                    mainMenu.style.opacity =
+                        "";
+
+                }
 
             },
             750
@@ -706,9 +771,12 @@ function togglePause() {
 
     }
 
-    paused = !paused;
+    paused =
+        !paused;
 
     if (paused) {
+
+        resetKeys();
 
         if (pauseMenu) {
 
@@ -729,7 +797,9 @@ function togglePause() {
 
             } catch (error) {
 
-                /* Ignore */
+                console.warn(
+                    "Could not exit pointer lock."
+                );
 
             }
 
@@ -747,12 +817,12 @@ function togglePause() {
 
         }
 
-        requestGamePointerLock();
-
         showMessage(
             "You are still here.",
             "Find a way out."
         );
+
+        requestGamePointerLock();
 
     }
 
@@ -760,7 +830,7 @@ function togglePause() {
 
 
 /* =========================================================
-   RESUME
+   RESUME BUTTON
 ========================================================= */
 
 if (resumeButton) {
@@ -769,13 +839,30 @@ if (resumeButton) {
         "click",
         function() {
 
+            if (!gameStarted) {
+
+                return;
+
+            }
+
             paused = false;
 
-            pauseMenu.classList.add(
-                "hidden"
-            );
+            resetKeys();
+
+            if (pauseMenu) {
+
+                pauseMenu.classList.add(
+                    "hidden"
+                );
+
+            }
 
             requestGamePointerLock();
+
+            showMessage(
+                "You are still here.",
+                "Find a way out."
+            );
 
         }
     );
@@ -784,7 +871,7 @@ if (resumeButton) {
 
 
 /* =========================================================
-   RESTART
+   RESTART BUTTON
 ========================================================= */
 
 if (restartButton) {
@@ -793,18 +880,30 @@ if (restartButton) {
         "click",
         function() {
 
+            if (!gameStarted) {
+
+                return;
+
+            }
+
             resetGame();
 
             paused = false;
 
-            pauseMenu.classList.add(
-                "hidden"
-            );
+            if (pauseMenu) {
+
+                pauseMenu.classList.add(
+                    "hidden"
+                );
+
+            }
 
             showMessage(
                 "The room is quiet.",
                 "But something feels different."
             );
+
+            startAudio();
 
             requestGamePointerLock();
 
@@ -815,7 +914,7 @@ if (restartButton) {
 
 
 /* =========================================================
-   CONTROLS
+   CONTROLS BUTTON
 ========================================================= */
 
 if (controlsButton) {
@@ -824,15 +923,23 @@ if (controlsButton) {
         "click",
         function() {
 
-            controlsPanel.classList.remove(
-                "hidden"
-            );
+            if (controlsPanel) {
+
+                controlsPanel.classList.remove(
+                    "hidden"
+                );
+
+            }
 
         }
     );
 
 }
 
+
+/* =========================================================
+   PAUSE CONTROLS BUTTON
+========================================================= */
 
 if (pauseControlsButton) {
 
@@ -840,9 +947,13 @@ if (pauseControlsButton) {
         "click",
         function() {
 
-            controlsPanel.classList.remove(
-                "hidden"
-            );
+            if (controlsPanel) {
+
+                controlsPanel.classList.remove(
+                    "hidden"
+                );
+
+            }
 
         }
     );
@@ -850,15 +961,23 @@ if (pauseControlsButton) {
 }
 
 
+/* =========================================================
+   CLOSE CONTROLS
+========================================================= */
+
 if (closeControls) {
 
     closeControls.addEventListener(
         "click",
         function() {
 
-            controlsPanel.classList.add(
-                "hidden"
-            );
+            if (controlsPanel) {
+
+                controlsPanel.classList.add(
+                    "hidden"
+                );
+
+            }
 
         }
     );
@@ -912,17 +1031,53 @@ function isWall(x, y) {
 }
 
 
+/* =========================================================
+   PLAYER COLLISION
+========================================================= */
+
 function canMoveTo(x, y) {
 
     const r =
         player.radius;
 
-    return (
-        !isWall(x - r, y - r) &&
-        !isWall(x + r, y - r) &&
-        !isWall(x - r, y + r) &&
-        !isWall(x + r, y + r)
-    );
+    const points = [
+
+        [x - r, y - r],
+
+        [x + r, y - r],
+
+        [x - r, y + r],
+
+        [x + r, y + r],
+
+        [x, y - r],
+
+        [x, y + r],
+
+        [x - r, y],
+
+        [x + r, y]
+
+    ];
+
+    for (
+        const point of points
+    ) {
+
+        if (
+            isWall(
+                point[0],
+                point[1]
+            )
+        ) {
+
+            return false;
+
+        }
+
+    }
+
+    return true;
 
 }
 
@@ -934,36 +1089,31 @@ function canMoveTo(x, y) {
 function updateMovement(dt) {
 
     let forward = 0;
+
     let strafe = 0;
 
     if (keys.w) {
-
         forward += 1;
-
     }
 
     if (keys.s) {
-
         forward -= 1;
-
     }
 
     if (keys.d) {
-
         strafe += 1;
-
     }
 
     if (keys.a) {
-
         strafe -= 1;
-
     }
 
     if (
         forward === 0 &&
         strafe === 0
     ) {
+
+        footstepTimer = 0;
 
         return;
 
@@ -975,16 +1125,24 @@ function updateMovement(dt) {
             strafe
         );
 
-    forward /= length;
-    strafe /= length;
+    forward /=
+        length;
 
-    const speed = 2.25;
+    strafe /=
+        length;
+
+    const speed =
+        2.25;
 
     const cos =
-        Math.cos(player.angle);
+        Math.cos(
+            player.angle
+        );
 
     const sin =
-        Math.sin(player.angle);
+        Math.sin(
+            player.angle
+        );
 
     const moveX =
         (
@@ -1008,7 +1166,8 @@ function updateMovement(dt) {
     const nextY =
         player.y + moveY;
 
-    let moved = false;
+    let moved =
+        false;
 
     if (
         canMoveTo(
@@ -1017,9 +1176,11 @@ function updateMovement(dt) {
         )
     ) {
 
-        player.x = nextX;
+        player.x =
+            nextX;
 
-        moved = true;
+        moved =
+            true;
 
     }
 
@@ -1030,21 +1191,27 @@ function updateMovement(dt) {
         )
     ) {
 
-        player.y = nextY;
+        player.y =
+            nextY;
 
-        moved = true;
+        moved =
+            true;
 
     }
 
     if (moved) {
 
-        footstepTimer -= dt;
+        footstepTimer -=
+            dt;
 
-        if (footstepTimer <= 0) {
+        if (
+            footstepTimer <= 0
+        ) {
 
             playFootstep();
 
-            footstepTimer = 0.42;
+            footstepTimer =
+                0.42;
 
         }
 
@@ -1054,7 +1221,7 @@ function updateMovement(dt) {
 
 
 /* =========================================================
-   DOOR FINDER
+   FIND DOOR
 ========================================================= */
 
 function findDoor() {
@@ -1112,7 +1279,7 @@ function findDoor() {
 
                     y: y + 0.5,
 
-                    distance: distance
+                    distance
 
                 };
 
@@ -1128,7 +1295,7 @@ function findDoor() {
 
 
 /* =========================================================
-   INTERACTION DETECTION
+   UPDATE INTERACTION
 ========================================================= */
 
 function updateInteraction() {
@@ -1138,9 +1305,10 @@ function updateInteraction() {
         paused
     ) {
 
-        hideInteraction();
+        interactionTarget =
+            null;
 
-        interactionTarget = null;
+        hideInteraction();
 
         return;
 
@@ -1150,70 +1318,88 @@ function updateInteraction() {
         findDoor();
 
     if (
-        door &&
-        door.distance < 1.65
+        !door ||
+        door.distance >= 1.65
     ) {
 
-        const dx =
-            door.x -
-            player.x;
+        interactionTarget =
+            null;
 
-        const dy =
-            door.y -
-            player.y;
+        hideInteraction();
 
-        const angle =
-            Math.atan2(
-                dy,
-                dx
-            );
-
-        const difference =
-            Math.abs(
-                normalizeAngle(
-                    angle -
-                    player.angle
-                )
-            );
-
-        if (
-            difference < 0.75
-        ) {
-
-            interactionTarget =
-                "door";
-
-            if (doorOpen) {
-
-                interactionMain.textContent =
-                    "DOOR";
-
-                interactionSub.textContent =
-                    "The way is open";
-
-            } else {
-
-                interactionMain.textContent =
-                    "OPEN DOOR";
-
-                interactionSub.textContent =
-                    "Press E or ENTER";
-
-            }
-
-            interaction.classList.add(
-                "visible"
-            );
-
-            return;
-
-        }
+        return;
 
     }
 
-    interactionTarget = null;
+    const dx =
+        door.x -
+        player.x;
 
-    hideInteraction();
+    const dy =
+        door.y -
+        player.y;
+
+    const targetAngle =
+        Math.atan2(
+            dy,
+            dx
+        );
+
+    const difference =
+        Math.abs(
+            normalizeAngle(
+                targetAngle -
+                player.angle
+            )
+        );
+
+    if (
+        difference >= 0.85
+    ) {
+
+        interactionTarget =
+            null;
+
+        hideInteraction();
+
+        return;
+
+    }
+
+    interactionTarget =
+        "door";
+
+    if (!interactionMain || !interactionSub) {
+
+        return;
+
+    }
+
+    if (doorOpen) {
+
+        interactionMain.textContent =
+            "DOOR";
+
+        interactionSub.textContent =
+            "The way is open";
+
+    } else {
+
+        interactionMain.textContent =
+            "OPEN DOOR";
+
+        interactionSub.textContent =
+            "Press E or ENTER";
+
+    }
+
+    if (interaction) {
+
+        interaction.classList.add(
+            "visible"
+        );
+
+    }
 
 }
 
@@ -1233,11 +1419,31 @@ function interact() {
 
     }
 
+    const door =
+        findDoor();
+
+    if (!door) {
+
+        return;
+
+    }
+
+    if (
+        door.distance >
+        1.8
+    ) {
+
+        return;
+
+    }
+
     if (!doorOpen) {
 
-        doorOpen = true;
+        doorOpen =
+            true;
 
-        doorProgress = 1;
+        doorProgress =
+            1;
 
         if (objective) {
 
@@ -1262,9 +1468,13 @@ function interact() {
             setTimeout(
                 function() {
 
-                    game.classList.remove(
-                        "shake"
-                    );
+                    if (game) {
+
+                        game.classList.remove(
+                            "shake"
+                        );
+
+                    }
 
                 },
                 550
@@ -1292,9 +1502,12 @@ function interact() {
 
 function toggleFlashlight() {
 
-    if (battery <= 0) {
+    if (
+        battery <= 0
+    ) {
 
-        flashlightOn = false;
+        flashlightOn =
+            false;
 
         showMessage(
             "The flashlight is dead.",
@@ -1312,14 +1525,21 @@ function toggleFlashlight() {
 
     playFlashlightClick();
 
-    showMessage(
-        flashlightOn
-            ? "Flashlight on."
-            : "Flashlight off.",
-        flashlightOn
-            ? "The darkness retreats."
-            : "The darkness returns."
-    );
+    if (flashlightOn) {
+
+        showMessage(
+            "Flashlight on.",
+            "The darkness retreats."
+        );
+
+    } else {
+
+        showMessage(
+            "Flashlight off.",
+            "The darkness returns."
+        );
+
+    }
 
 }
 
@@ -1345,9 +1565,13 @@ function updateBattery(dt) {
             battery
         );
 
-    if (battery <= 0) {
+    if (
+        battery <= 0 &&
+        flashlightOn
+    ) {
 
-        flashlightOn = false;
+        flashlightOn =
+            false;
 
         showMessage(
             "The flashlight dies.",
@@ -1385,7 +1609,9 @@ function updateBatteryUI() {
     batteryFill.style.width =
         value + "%";
 
-    if (value < 20) {
+    if (
+        value < 20
+    ) {
 
         document.body.classList.add(
             "lowBattery"
@@ -1403,7 +1629,7 @@ function updateBatteryUI() {
 
 
 /* =========================================================
-   ANGLE
+   NORMALIZE ANGLE
 ========================================================= */
 
 function normalizeAngle(angle) {
@@ -1432,7 +1658,7 @@ function normalizeAngle(angle) {
 
 
 /* =========================================================
-   MESSAGE
+   SHOW MESSAGE
 ========================================================= */
 
 function showMessage(
@@ -1450,15 +1676,36 @@ function showMessage(
         messageTimer
     );
 
-    message.innerHTML =
-        mainText +
-        (
-            subText
-                ? "<span>" +
-                  subText +
-                  "</span>"
-                : ""
+    message.textContent =
+        "";
+
+    const main =
+        document.createElement(
+            "div"
         );
+
+    main.textContent =
+        mainText || "";
+
+    message.appendChild(
+        main
+    );
+
+    if (subText) {
+
+        const span =
+            document.createElement(
+                "span"
+            );
+
+        span.textContent =
+            subText;
+
+        message.appendChild(
+            span
+        );
+
+    }
 
     message.classList.add(
         "visible"
@@ -1468,9 +1715,13 @@ function showMessage(
         setTimeout(
             function() {
 
-                message.classList.remove(
-                    "visible"
-                );
+                if (message) {
+
+                    message.classList.remove(
+                        "visible"
+                    );
+
+                }
 
             },
             3500
@@ -1478,6 +1729,10 @@ function showMessage(
 
 }
 
+
+/* =========================================================
+   HIDE MESSAGE
+========================================================= */
 
 function hideMessage() {
 
@@ -1497,6 +1752,10 @@ function hideMessage() {
 
 }
 
+
+/* =========================================================
+   HIDE INTERACTION
+========================================================= */
 
 function hideInteraction() {
 
@@ -1525,18 +1784,22 @@ function castRay(angle) {
     const cos =
         Math.cos(angle);
 
-    let distance = 0;
+    let distance =
+        0;
 
-    const maxDistance = 30;
+    const maxDistance =
+        30;
 
-    const step = 0.025;
+    const step =
+        0.025;
 
     while (
         distance <
         maxDistance
     ) {
 
-        distance += step;
+        distance +=
+            step;
 
         const x =
             player.x +
@@ -1562,8 +1825,11 @@ function castRay(angle) {
             return {
 
                 distance,
+
                 type: "wall",
+
                 mapX,
+
                 mapY
 
             };
@@ -1573,13 +1839,18 @@ function castRay(angle) {
         const tile =
             MAP[mapY][mapX];
 
-        if (tile === "#") {
+        if (
+            tile === "#"
+        ) {
 
             return {
 
                 distance,
+
                 type: "wall",
+
                 mapX,
+
                 mapY
 
             };
@@ -1594,8 +1865,11 @@ function castRay(angle) {
             return {
 
                 distance,
+
                 type: "door",
+
                 mapX,
+
                 mapY
 
             };
@@ -1667,6 +1941,12 @@ function drawBackground(
     height
 ) {
 
+    if (!ctx) {
+
+        return;
+
+    }
+
     const gradient =
         ctx.createLinearGradient(
             0,
@@ -1727,6 +2007,12 @@ function drawWorld(
     width,
     height
 ) {
+
+    if (!ctx) {
+
+        return;
+
+    }
 
     const columns =
         Math.min(
@@ -1797,7 +2083,7 @@ function drawWorld(
 
         ctx.fillRect(
             column *
-                columnWidth,
+            columnWidth,
             top,
             columnWidth + 1,
             wallHeight
@@ -1821,16 +2107,19 @@ function getWallShade(
         105 /
         Math.max(
             1,
-            distance * distance
+            distance *
+            distance
         );
 
     if (flashlightOn) {
 
-        light *= 3.2;
+        light *=
+            3.2;
 
     } else {
 
-        light *= 0.32;
+        light *=
+            0.32;
 
     }
 
@@ -1843,7 +2132,9 @@ function getWallShade(
             )
         );
 
-    if (type === "door") {
+    if (
+        type === "door"
+    ) {
 
         const doorLight =
             Math.floor(
@@ -1863,7 +2154,9 @@ function getWallShade(
     }
 
     const wallLight =
-        Math.floor(light);
+        Math.floor(
+            light
+        );
 
     return (
         "rgb(" +
@@ -1893,22 +2186,28 @@ function updateHorror(dt) {
 
     }
 
-    apparitionTimer += dt;
+    apparitionTimer +=
+        dt;
 
     if (
         !apparitionActive &&
         apparitionTimer > 18
     ) {
 
-        apparitionTimer = 0;
+        apparitionTimer =
+            0;
 
         if (
-            Math.random() < 0.55
+            Math.random() <
+            0.55
         ) {
 
-            apparitionActive = true;
+            apparitionActive =
+                true;
 
-            if (apparitionTimeout) {
+            if (
+                apparitionTimeout !== null
+            ) {
 
                 clearTimeout(
                     apparitionTimeout
@@ -1940,7 +2239,7 @@ function updateHorror(dt) {
 
 
 /* =========================================================
-   APPARITION RENDER
+   APPARITION
 ========================================================= */
 
 function drawApparition(
@@ -1948,7 +2247,10 @@ function drawApparition(
     height
 ) {
 
-    if (!apparitionActive) {
+    if (
+        !ctx ||
+        !apparitionActive
+    ) {
 
         return;
 
@@ -2020,17 +2322,6 @@ function drawApparition(
    AUDIO
 ========================================================= */
 
-let audioContext = null;
-
-let masterGain = null;
-
-let ambientGain = null;
-
-
-/* =========================================================
-   START AUDIO
-========================================================= */
-
 function startAudio() {
 
     if (audioContext) {
@@ -2053,11 +2344,22 @@ function startAudio() {
 
     try {
 
+        const AudioContextClass =
+            window.AudioContext ||
+            window.webkitAudioContext;
+
+        if (!AudioContextClass) {
+
+            console.warn(
+                "Web Audio API is not supported."
+            );
+
+            return;
+
+        }
+
         audioContext =
-            new (
-                window.AudioContext ||
-                window.webkitAudioContext
-            )();
+            new AudioContextClass();
 
         masterGain =
             audioContext.createGain();
@@ -2084,7 +2386,8 @@ function startAudio() {
     } catch (error) {
 
         console.warn(
-            "Audio is unavailable in this browser."
+            "Audio is unavailable.",
+            error
         );
 
     }
@@ -2093,12 +2396,15 @@ function startAudio() {
 
 
 /* =========================================================
-   AMBIENT SOUND
+   AMBIENT
 ========================================================= */
 
 function startAmbient() {
 
-    if (!audioContext) {
+    if (
+        !audioContext ||
+        !ambientGain
+    ) {
 
         return;
 
@@ -2159,12 +2465,15 @@ function startAmbient() {
 
 
 /* =========================================================
-   FOOTSTEP SOUND
+   FOOTSTEP
 ========================================================= */
 
 function playFootstep() {
 
-    if (!audioContext) {
+    if (
+        !audioContext ||
+        !masterGain
+    ) {
 
         return;
 
@@ -2173,12 +2482,15 @@ function playFootstep() {
     const now =
         audioContext.currentTime;
 
+    const duration =
+        0.10;
+
     const buffer =
         audioContext.createBuffer(
             1,
             Math.floor(
                 audioContext.sampleRate *
-                0.10
+                duration
             ),
             audioContext.sampleRate
         );
@@ -2241,7 +2553,7 @@ function playFootstep() {
 
     gain.gain.exponentialRampToValueAtTime(
         0.0001,
-        now + 0.10
+        now + duration
     );
 
     source.connect(
@@ -2256,7 +2568,9 @@ function playFootstep() {
         masterGain
     );
 
-    source.start(now);
+    source.start(
+        now
+    );
 
     source.stop(
         now + 0.11
@@ -2271,7 +2585,10 @@ function playFootstep() {
 
 function playDoorSound() {
 
-    if (!audioContext) {
+    if (
+        !audioContext ||
+        !masterGain
+    ) {
 
         return;
 
@@ -2324,7 +2641,9 @@ function playDoorSound() {
         masterGain
     );
 
-    oscillator.start(now);
+    oscillator.start(
+        now
+    );
 
     oscillator.stop(
         now + 1.3
@@ -2339,7 +2658,10 @@ function playDoorSound() {
 
 function playWhisper() {
 
-    if (!audioContext) {
+    if (
+        !audioContext ||
+        !masterGain
+    ) {
 
         return;
 
@@ -2348,12 +2670,15 @@ function playWhisper() {
     const now =
         audioContext.currentTime;
 
+    const duration =
+        1.5;
+
     const buffer =
         audioContext.createBuffer(
             1,
             Math.floor(
                 audioContext.sampleRate *
-                1.5
+                duration
             ),
             audioContext.sampleRate
         );
@@ -2423,7 +2748,9 @@ function playWhisper() {
         masterGain
     );
 
-    source.start(now);
+    source.start(
+        now
+    );
 
 }
 
@@ -2434,7 +2761,10 @@ function playWhisper() {
 
 function playFlashlightClick() {
 
-    if (!audioContext) {
+    if (
+        !audioContext ||
+        !masterGain
+    ) {
 
         return;
 
@@ -2475,7 +2805,9 @@ function playFlashlightClick() {
         masterGain
     );
 
-    oscillator.start(now);
+    oscillator.start(
+        now
+    );
 
     oscillator.stop(
         now + 0.05
@@ -2491,15 +2823,17 @@ function playFlashlightClick() {
 let lastTime =
     performance.now();
 
-
 function loop(now) {
 
     const dt =
         Math.min(
-            (
-                now -
-                lastTime
-            ) / 1000,
+            Math.max(
+                0,
+                (
+                    now -
+                    lastTime
+                ) / 1000
+            ),
             0.05
         );
 
@@ -2511,15 +2845,22 @@ function loop(now) {
         !paused
     ) {
 
-        elapsed += dt;
+        elapsed +=
+            dt;
 
-        updateMovement(dt);
+        updateMovement(
+            dt
+        );
 
-        updateBattery(dt);
+        updateBattery(
+            dt
+        );
 
         updateInteraction();
 
-        updateHorror(dt);
+        updateHorror(
+            dt
+        );
 
     }
 
