@@ -2,22 +2,43 @@
 
 /* =========================================================
    THE LAST ROOM
-   COMPLETE HORROR FPS GAME
-
-   CONTROLS
+   FULL FPS HORROR VERSION
    ---------------------------------------------------------
+   CONTROLS
+
    W A S D       = Move
-   SHIFT         = Sprint
    MOUSE         = Look
    LEFT CLICK    = Shoot
-   RIGHT CLICK   = Aim
+   E / ENTER     = Interact
+   F             = Flashlight
    R             = Reload
    1             = Pistol
    2             = Shotgun
-   3             = Rifle
-   E / ENTER     = Interact
-   F             = Flashlight
    ESC           = Pause
+
+   FEATURES
+   ---------------------------------------------------------
+   - Raycast pseudo 3D
+   - First person weapons
+   - Pistol
+   - Shotgun
+   - Shooting / recoil
+   - Ammo / reload
+   - Zombies
+   - Zombie AI
+   - Zombie health
+   - Player health
+   - Zombie damage
+   - Zombie death
+   - Zombie respawn
+   - Hit marker
+   - Muzzle flash
+   - Damage vignette
+   - Crosshair
+   - Flashlight
+   - Door
+   - Horror apparition
+   - Ambient audio
 ========================================================= */
 
 
@@ -25,32 +46,17 @@
    DOM
 ========================================================= */
 
-const canvas =
-    document.getElementById("gameCanvas");
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas ? canvas.getContext("2d") : null;
 
-const ctx =
-    canvas
-        ? canvas.getContext("2d")
-        : null;
+const game = document.getElementById("game");
 
-const game =
-    document.getElementById("game");
+const mainMenu = document.getElementById("mainMenu");
+const pauseMenu = document.getElementById("pauseMenu");
+const controlsPanel = document.getElementById("controlsPanel");
 
-const mainMenu =
-    document.getElementById("mainMenu");
-
-const pauseMenu =
-    document.getElementById("pauseMenu");
-
-const controlsPanel =
-    document.getElementById("controlsPanel");
-
-const startButton =
-    document.getElementById("startButton");
-
-const controlsButton =
-    document.getElementById("controlsButton");
-
+const startButton = document.getElementById("startButton");
+const controlsButton = document.getElementById("controlsButton");
 const pauseControlsButton =
     document.getElementById("pauseControlsButton");
 
@@ -83,69 +89,12 @@ const batteryFill =
 
 
 /* =========================================================
-   CANVAS SAFETY
-========================================================= */
-
-if (!canvas || !ctx) {
-
-    console.error(
-        "THE LAST ROOM: gameCanvas not found."
-    );
-
-}
-
-
-/* =========================================================
-   MENU CLICK FIX
-========================================================= */
-
-function setupUI() {
-
-    if (canvas) {
-
-        canvas.style.position = "fixed";
-        canvas.style.inset = "0";
-        canvas.style.zIndex = "1";
-        canvas.style.pointerEvents = "none";
-
-    }
-
-    if (mainMenu) {
-
-        mainMenu.style.position = "fixed";
-        mainMenu.style.inset = "0";
-        mainMenu.style.zIndex = "1000";
-        mainMenu.style.pointerEvents = "auto";
-
-    }
-
-    if (pauseMenu) {
-
-        pauseMenu.style.position = "fixed";
-        pauseMenu.style.zIndex = "900";
-
-    }
-
-    if (controlsPanel) {
-
-        controlsPanel.style.zIndex = "1100";
-
-    }
-
-}
-
-setupUI();
-
-
-/* =========================================================
-   CANVAS RESIZE
+   CANVAS
 ========================================================= */
 
 function resizeCanvas() {
 
-    if (!canvas || !ctx) {
-        return;
-    }
+    if (!canvas || !ctx) return;
 
     const dpr =
         Math.min(
@@ -153,33 +102,21 @@ function resizeCanvas() {
             2
         );
 
-    const width =
-        Math.max(
-            1,
-            window.innerWidth
-        );
-
-    const height =
-        Math.max(
-            1,
-            window.innerHeight
-        );
-
     canvas.width =
         Math.floor(
-            width * dpr
+            window.innerWidth * dpr
         );
 
     canvas.height =
         Math.floor(
-            height * dpr
+            window.innerHeight * dpr
         );
 
     canvas.style.width =
-        width + "px";
+        window.innerWidth + "px";
 
     canvas.style.height =
-        height + "px";
+        window.innerHeight + "px";
 
     ctx.setTransform(
         dpr,
@@ -189,7 +126,6 @@ function resizeCanvas() {
         0,
         0
     );
-
 }
 
 window.addEventListener(
@@ -206,33 +142,21 @@ resizeCanvas();
 
 const MAP = [
 
-    "#################",
-
-    "#...............#",
-
-    "#...............#",
-
-    "#...####D####...#",
-
-    "#...............#",
-
-    "#...............#",
-
-    "#.....###.......#",
-
-    "#.....#.........#",
-
-    "#.....#.........#",
-
-    "#...............#",
-
-    "#...............#",
-
-    "#...............#",
-
-    "#...............#",
-
-    "#################"
+    "###################",
+    "#.................#",
+    "#.................#",
+    "#...####D####.....#",
+    "#.................#",
+    "#.................#",
+    "#.....###.........#",
+    "#.....#...........#",
+    "#.....#...........#",
+    "#.................#",
+    "#.................#",
+    "#.........####....#",
+    "#.................#",
+    "#.................#",
+    "###################"
 
 ];
 
@@ -253,7 +177,6 @@ const FOV =
 const player = {
 
     x: 2.5,
-
     y: 2.5,
 
     angle: Math.PI / 2,
@@ -261,16 +184,11 @@ const player = {
     radius: 0.20,
 
     health: 100,
-
     maxHealth: 100,
 
-    stamina: 100,
+    kills: 0,
 
-    maxStamina: 100,
-
-    sprinting: false,
-
-    damageFlash: 0
+    speed: 2.5
 
 };
 
@@ -279,103 +197,55 @@ const player = {
    GAME STATE
 ========================================================= */
 
-let gameStarted =
-    false;
+let gameStarted = false;
+let paused = false;
+let gameOver = false;
 
-let paused =
-    false;
+let doorOpen = false;
+let doorProgress = 0;
 
-let gameOver =
-    false;
+let flashlightOn = true;
+let battery = 100;
 
-let victory =
-    false;
+let elapsed = 0;
 
-let elapsed =
-    0;
+let apparitionActive = false;
+let apparitionTimer = 0;
+let apparitionTimeout = null;
 
+let interactionTarget = null;
 
-/* =========================================================
-   DOOR
-========================================================= */
+let footstepTimer = 0;
 
-let doorOpen =
-    false;
+let messageTimer = null;
 
-let doorProgress =
-    0;
+let pointerLockPending = false;
 
+let damageFlash = 0;
 
-/* =========================================================
-   FLASHLIGHT
-========================================================= */
+let hitMarkerTimer = 0;
 
-let flashlightOn =
-    true;
+let muzzleFlashTimer = 0;
 
-let battery =
-    100;
+let recoil = 0;
 
+let shakeAmount = 0;
 
-/* =========================================================
-   INTERACTION
-========================================================= */
+let wave = 1;
 
-let interactionTarget =
-    null;
+let zombiesKilledThisWave = 0;
 
 
 /* =========================================================
-   HORROR
-========================================================= */
-
-let apparitionActive =
-    false;
-
-let apparitionTimer =
-    0;
-
-let apparitionTimeout =
-    null;
-
-
-/* =========================================================
-   MESSAGE
-========================================================= */
-
-let messageTimer =
-    null;
-
-
-/* =========================================================
-   POINTER
-========================================================= */
-
-let pointerLockPending =
-    false;
-
-let mouseDown =
-    false;
-
-let aiming =
-    false;
-
-
-/* =========================================================
-   MOVEMENT KEYS
+   KEYS
 ========================================================= */
 
 const keys = {
 
     w: false,
-
     a: false,
-
     s: false,
-
-    d: false,
-
-    shift: false
+    d: false
 
 };
 
@@ -388,13 +258,11 @@ const weapons = {
 
     pistol: {
 
-        id: "pistol",
-
-        name: "9MM PISTOL",
+        name: "PISTOL",
 
         damage: 34,
 
-        fireRate: 3.5,
+        fireRate: 0.32,
 
         magazineSize: 12,
 
@@ -402,29 +270,23 @@ const weapons = {
 
         reserve: 72,
 
-        reloadTime: 1.1,
+        reloadTime: 1.15,
 
-        spread: 0.035,
+        spread: 0.025,
 
         pellets: 1,
 
-        range: 20,
+        recoil: 5,
 
-        recoil: 0.035,
-
-        automatic: false,
-
-        color: "#bdbdbd"
+        soundFrequency: 145
 
     },
 
     shotgun: {
 
-        id: "shotgun",
+        name: "SHOTGUN",
 
-        name: "PUMP SHOTGUN",
-
-        damage: 22,
+        damage: 20,
 
         fireRate: 0.85,
 
@@ -432,91 +294,32 @@ const weapons = {
 
         ammo: 6,
 
-        reserve: 30,
+        reserve: 36,
 
-        reloadTime: 1.8,
+        reloadTime: 1.65,
 
-        spread: 0.18,
+        spread: 0.12,
 
-        pellets: 8,
+        pellets: 7,
 
-        range: 12,
+        recoil: 13,
 
-        recoil: 0.10,
-
-        automatic: false,
-
-        color: "#8f8f8f"
-
-    },
-
-    rifle: {
-
-        id: "rifle",
-
-        name: "ASSAULT RIFLE",
-
-        damage: 18,
-
-        fireRate: 9,
-
-        magazineSize: 30,
-
-        ammo: 30,
-
-        reserve: 150,
-
-        reloadTime: 1.7,
-
-        spread: 0.028,
-
-        pellets: 1,
-
-        range: 25,
-
-        recoil: 0.022,
-
-        automatic: true,
-
-        color: "#777"
+        soundFrequency: 75
 
     }
 
 };
 
-const weaponOrder = [
-
-    "pistol",
-
-    "shotgun",
-
-    "rifle"
-
-];
-
-let currentWeaponIndex =
-    0;
-
 let currentWeapon =
-    weapons.pistol;
+    "pistol";
 
-let weaponCooldown =
-    0;
+let shooting = false;
 
-let reloadTimer =
-    0;
+let fireCooldown = 0;
 
-let isReloading =
-    false;
+let reloadTimer = 0;
 
-let weaponRecoil =
-    0;
-
-let muzzleFlashTimer =
-    0;
-
-let shellTimer =
-    0;
+let isReloading = false;
 
 
 /* =========================================================
@@ -525,125 +328,18 @@ let shellTimer =
 
 const zombies = [];
 
-let zombieIdCounter =
-    0;
+const zombieSpawnPoints = [
 
-let zombiesKilled =
-    0;
+    { x: 15.5, y: 2.5 },
+    { x: 16.2, y: 5.5 },
+    { x: 13.5, y: 8.5 },
+    { x: 15.5, y: 11.5 },
+    { x: 11.5, y: 12.5 },
+    { x: 8.5, y: 12.5 },
+    { x: 3.5, y: 11.5 },
+    { x: 10.5, y: 5.5 }
 
-let totalZombiesSpawned =
-    0;
-
-const MAX_ZOMBIES =
-    12;
-
-
-/* =========================================================
-   ZOMBIE TYPES
-========================================================= */
-
-const ZOMBIE_TYPES = {
-
-    normal: {
-
-        health: 100,
-
-        speed: 0.72,
-
-        damage: 9,
-
-        attackRange: 0.75,
-
-        attackCooldown: 1.15,
-
-        radius: 0.28,
-
-        scale: 1
-
-    },
-
-    fast: {
-
-        health: 70,
-
-        speed: 1.15,
-
-        damage: 7,
-
-        attackRange: 0.72,
-
-        attackCooldown: 0.85,
-
-        radius: 0.24,
-
-        scale: 0.92
-
-    },
-
-    brute: {
-
-        health: 220,
-
-        speed: 0.45,
-
-        damage: 18,
-
-        attackRange: 0.85,
-
-        attackCooldown: 1.5,
-
-        radius: 0.34,
-
-        scale: 1.25
-
-    }
-
-};
-
-
-/* =========================================================
-   AUDIO
-========================================================= */
-
-let audioContext =
-    null;
-
-let masterGain =
-    null;
-
-let ambientGain =
-    null;
-
-
-/* =========================================================
-   DYNAMIC HUD
-========================================================= */
-
-let hud = null;
-
-let healthBar = null;
-
-let staminaBar = null;
-
-let ammoText = null;
-
-let weaponText = null;
-
-let killText = null;
-
-let zombieCountText = null;
-
-let reloadText = null;
-
-let sprintText = null;
-
-let crosshair = null;
-
-let hitMarker = null;
-
-let gameOverPanel = null;
-
-let victoryPanel = null;
+];
 
 
 /* =========================================================
@@ -652,610 +348,530 @@ let victoryPanel = null;
 
 function createHUD() {
 
-    if (
-        document.getElementById(
-            "fpsHUD"
-        )
-    ) {
-
-        hud =
-            document.getElementById(
-                "fpsHUD"
-            );
-
+    if (document.getElementById("fpsHUD")) {
         return;
-
     }
 
-    const style =
-        document.createElement(
-            "style"
-        );
+    const hud =
+        document.createElement("div");
 
-    style.id =
-        "fpsHUDStyle";
-
-    style.textContent = `
-
-        #fpsHUD {
-            position:fixed;
-            inset:0;
-            z-index:500;
-            pointer-events:none;
-            font-family:Arial, sans-serif;
-            color:#eee;
-        }
-
-        #playerPanel {
-            position:absolute;
-            left:28px;
-            bottom:28px;
-            width:280px;
-            text-shadow:0 2px 5px #000;
-        }
-
-        .hudLabel {
-            font-size:11px;
-            letter-spacing:3px;
-            margin-bottom:5px;
-            opacity:.8;
-        }
-
-        .hudBar {
-            height:10px;
-            background:rgba(0,0,0,.65);
-            border:1px solid rgba(255,255,255,.35);
-            margin-bottom:12px;
-            overflow:hidden;
-        }
-
-        .hudFill {
-            height:100%;
-            width:100%;
-            transition:width .15s ease;
-        }
-
-        #healthFill {
-            background:#cfcfcf;
-        }
-
-        #staminaFill {
-            background:#888;
-        }
-
-        #weaponPanel {
-            position:absolute;
-            right:35px;
-            bottom:30px;
-            text-align:right;
-            text-shadow:0 2px 6px #000;
-        }
-
-        #weaponName {
-            font-size:14px;
-            letter-spacing:4px;
-            margin-bottom:5px;
-        }
-
-        #ammoText {
-            font-size:31px;
-            font-weight:bold;
-            letter-spacing:2px;
-        }
-
-        #killPanel {
-            position:absolute;
-            right:35px;
-            top:30px;
-            text-align:right;
-            font-size:12px;
-            letter-spacing:3px;
-            line-height:1.8;
-            text-shadow:0 2px 5px #000;
-        }
-
-        #crosshair {
-            position:absolute;
-            left:50%;
-            top:50%;
-            width:18px;
-            height:18px;
-            transform:translate(-50%,-50%);
-        }
-
-        #crosshair:before,
-        #crosshair:after {
-            content:"";
-            position:absolute;
-            background:rgba(255,255,255,.8);
-        }
-
-        #crosshair:before {
-            width:2px;
-            height:18px;
-            left:8px;
-            top:0;
-        }
-
-        #crosshair:after {
-            width:18px;
-            height:2px;
-            left:0;
-            top:8px;
-        }
-
-        #hitMarker {
-            position:absolute;
-            left:50%;
-            top:50%;
-            width:26px;
-            height:26px;
-            transform:translate(-50%,-50%);
-            opacity:0;
-        }
-
-        #hitMarker:before,
-        #hitMarker:after {
-            content:"";
-            position:absolute;
-            inset:0;
-            border:2px solid transparent;
-            border-top-color:white;
-            border-bottom-color:white;
-            transform:rotate(45deg);
-        }
-
-        #reloadText {
-            position:absolute;
-            left:50%;
-            bottom:120px;
-            transform:translateX(-50%);
-            font-size:12px;
-            letter-spacing:5px;
-            opacity:0;
-            text-shadow:0 2px 5px black;
-        }
-
-        #sprintText {
-            position:absolute;
-            left:28px;
-            bottom:5px;
-            font-size:9px;
-            letter-spacing:2px;
-            opacity:.5;
-        }
-
-        .zombieHealth {
-            position:absolute;
-            height:5px;
-            background:rgba(0,0,0,.75);
-            border:1px solid rgba(255,255,255,.25);
-            overflow:hidden;
-        }
-
-        .zombieHealthFill {
-            height:100%;
-            width:100%;
-            background:#ddd;
-        }
-
-        .damageScreen {
-            position:absolute;
-            inset:0;
-            background:rgba(255,0,0,.22);
-            opacity:0;
-            transition:opacity .08s;
-        }
-
-        .weaponFlash {
-            position:absolute;
-            left:50%;
-            bottom:15%;
-            width:220px;
-            height:180px;
-            transform:translateX(-50%);
-            opacity:0;
-            pointer-events:none;
-        }
-
-        .weaponFlash:before {
-            content:"";
-            position:absolute;
-            left:50%;
-            top:0;
-            width:80px;
-            height:120px;
-            transform:translateX(-50%);
-            background:radial-gradient(
-                ellipse,
-                rgba(255,255,255,.95),
-                rgba(180,180,180,.35),
-                transparent 70%
-            );
-        }
-
-        #gameOverPanel,
-        #victoryPanel {
-            position:fixed;
-            inset:0;
-            z-index:2000;
-            display:none;
-            align-items:center;
-            justify-content:center;
-            background:rgba(0,0,0,.88);
-            color:#eee;
-            text-align:center;
-            font-family:Arial,sans-serif;
-        }
-
-        .endBox {
-            width:min(500px,85vw);
-            border:1px solid rgba(255,255,255,.3);
-            padding:50px;
-            background:rgba(10,10,10,.9);
-        }
-
-        .endTitle {
-            font-size:42px;
-            letter-spacing:8px;
-            margin-bottom:20px;
-        }
-
-        .endSub {
-            font-size:13px;
-            letter-spacing:3px;
-            line-height:2;
-            opacity:.75;
-        }
-
-    `;
-
-    document.head.appendChild(
-        style
-    );
-
-
-    hud =
-        document.createElement(
-            "div"
-        );
-
-    hud.id =
-        "fpsHUD";
+    hud.id = "fpsHUD";
 
     hud.innerHTML = `
 
-        <div id="playerPanel">
+        <div id="healthHUD">
 
             <div class="hudLabel">
-                VITALITY
+                HEALTH
             </div>
 
-            <div class="hudBar">
-                <div
-                    id="healthFill"
-                    class="hudFill">
-                </div>
+            <div class="healthBar">
+                <div id="healthFill"></div>
             </div>
 
-            <div class="hudLabel">
-                STAMINA
-            </div>
-
-            <div class="hudBar">
-                <div
-                    id="staminaFill"
-                    class="hudFill">
-                </div>
+            <div id="healthText">
+                100 / 100
             </div>
 
         </div>
 
 
-        <div id="weaponPanel">
+        <div id="weaponHUD">
 
             <div id="weaponName">
-                9MM PISTOL
+                PISTOL
             </div>
 
             <div id="ammoText">
                 12 / 72
             </div>
 
+            <div id="reloadText">
+                READY
+            </div>
+
         </div>
 
 
-        <div id="killPanel">
+        <div id="killHUD">
+            ZOMBIES: 0
+        </div>
 
-            KILLS:
-            <span id="killText">
-                0
-            </span>
 
+        <div id="waveHUD">
+            WAVE 1
+        </div>
+
+
+        <div id="hitMarker">
+            ×
+        </div>
+
+
+        <div id="crosshair">
+
+            <span class="chTop"></span>
+            <span class="chBottom"></span>
+            <span class="chLeft"></span>
+            <span class="chRight"></span>
+
+        </div>
+
+
+        <div id="damageOverlay"></div>
+
+
+        <div id="weaponHint">
+            [1] PISTOL &nbsp;&nbsp; [2] SHOTGUN
             <br>
-
-            HOSTILES:
-            <span id="zombieCount">
-                0
-            </span>
-
-        </div>
-
-
-        <div id="crosshair"></div>
-
-        <div id="hitMarker"></div>
-
-        <div id="reloadText">
-            RELOADING
-        </div>
-
-        <div id="sprintText">
-            SHIFT — SPRINT
-        </div>
-
-        <div
-            id="weaponFlash"
-            class="weaponFlash">
-        </div>
-
-        <div
-            id="damageScreen"
-            class="damageScreen">
+            [R] RELOAD
         </div>
 
     `;
 
-    document.body.appendChild(
-        hud
-    );
+    document.body.appendChild(hud);
 
 
-    healthBar =
-        document.getElementById(
-            "healthFill"
-        );
+    const style =
+        document.createElement("style");
 
-    staminaBar =
-        document.getElementById(
-            "staminaFill"
-        );
+    style.id = "fpsHUDStyle";
 
-    ammoText =
-        document.getElementById(
-            "ammoText"
-        );
+    style.textContent = `
 
-    weaponText =
-        document.getElementById(
-            "weaponName"
-        );
+        #fpsHUD {
 
-    killText =
-        document.getElementById(
-            "killText"
-        );
+            position: fixed;
+            inset: 0;
 
-    zombieCountText =
-        document.getElementById(
-            "zombieCount"
-        );
+            pointer-events: none;
 
-    reloadText =
-        document.getElementById(
-            "reloadText"
-        );
+            z-index: 1000;
 
-    sprintText =
-        document.getElementById(
-            "sprintText"
-        );
+            font-family:
+                Arial,
+                Helvetica,
+                sans-serif;
 
-    crosshair =
-        document.getElementById(
-            "crosshair"
-        );
+            color: #fff;
 
-    hitMarker =
-        document.getElementById(
-            "hitMarker"
-        );
+        }
+
+
+        #healthHUD {
+
+            position: absolute;
+
+            left: 30px;
+            bottom: 30px;
+
+            width: 260px;
+
+            text-shadow:
+                0 2px 5px #000;
+
+        }
+
+
+        .hudLabel {
+
+            font-size: 11px;
+
+            letter-spacing: 4px;
+
+            margin-bottom: 7px;
+
+            opacity: .75;
+
+        }
+
+
+        .healthBar {
+
+            width: 260px;
+            height: 13px;
+
+            border:
+                1px solid
+                rgba(255,255,255,.5);
+
+            background:
+                rgba(0,0,0,.65);
+
+        }
+
+
+        #healthFill {
+
+            width: 100%;
+            height: 100%;
+
+            background:
+                linear-gradient(
+                    90deg,
+                    #8d0000,
+                    #e10000
+                );
+
+            transition:
+                width .15s ease;
+
+        }
+
+
+        #healthText {
+
+            margin-top: 6px;
+
+            font-size: 12px;
+
+            letter-spacing: 2px;
+
+        }
+
+
+        #weaponHUD {
+
+            position: absolute;
+
+            right: 35px;
+            bottom: 32px;
+
+            text-align: right;
+
+            text-shadow:
+                0 2px 6px #000;
+
+        }
+
+
+        #weaponName {
+
+            font-size: 16px;
+
+            letter-spacing: 5px;
+
+        }
+
+
+        #ammoText {
+
+            font-size: 32px;
+
+            font-weight: bold;
+
+            margin-top: 4px;
+
+        }
+
+
+        #reloadText {
+
+            font-size: 10px;
+
+            letter-spacing: 3px;
+
+            opacity: .7;
+
+        }
+
+
+        #killHUD {
+
+            position: absolute;
+
+            right: 35px;
+            top: 30px;
+
+            font-size: 12px;
+
+            letter-spacing: 3px;
+
+            text-shadow:
+                0 2px 6px #000;
+
+        }
+
+
+        #waveHUD {
+
+            position: absolute;
+
+            left: 35px;
+            top: 30px;
+
+            font-size: 12px;
+
+            letter-spacing: 3px;
+
+            text-shadow:
+                0 2px 6px #000;
+
+        }
+
+
+        #crosshair {
+
+            position: absolute;
+
+            left: 50%;
+            top: 50%;
+
+            width: 24px;
+            height: 24px;
+
+            transform:
+                translate(-50%,-50%);
+
+        }
+
+
+        #crosshair span {
+
+            position: absolute;
+
+            background:
+                rgba(255,255,255,.8);
+
+            box-shadow:
+                0 0 3px #000;
+
+        }
+
+
+        .chTop {
+
+            width: 2px;
+            height: 7px;
+
+            left: 11px;
+            top: 0;
+
+        }
+
+
+        .chBottom {
+
+            width: 2px;
+            height: 7px;
+
+            left: 11px;
+            bottom: 0;
+
+        }
+
+
+        .chLeft {
+
+            width: 7px;
+            height: 2px;
+
+            left: 0;
+            top: 11px;
+
+        }
+
+
+        .chRight {
+
+            width: 7px;
+            height: 2px;
+
+            right: 0;
+            top: 11px;
+
+        }
+
+
+        #hitMarker {
+
+            position: absolute;
+
+            left: 50%;
+            top: 50%;
+
+            transform:
+                translate(-50%,-50%);
+
+            font-size: 34px;
+
+            color: #fff;
+
+            opacity: 0;
+
+            text-shadow:
+                0 0 8px #fff;
+
+            transition:
+                opacity .08s;
+
+        }
+
+
+        #hitMarker.active {
+
+            opacity: 1;
+
+        }
+
+
+        #damageOverlay {
+
+            position: absolute;
+
+            inset: 0;
+
+            background:
+                radial-gradient(
+                    ellipse,
+                    transparent 45%,
+                    rgba(180,0,0,.75)
+                );
+
+            opacity: 0;
+
+            transition:
+                opacity .08s;
+
+        }
+
+
+        #weaponHint {
+
+            position: absolute;
+
+            left: 50%;
+
+            bottom: 25px;
+
+            transform:
+                translateX(-50%);
+
+            text-align: center;
+
+            font-size: 9px;
+
+            letter-spacing: 2px;
+
+            opacity: .42;
+
+            text-shadow:
+                0 2px 5px #000;
+
+        }
+
+    `;
+
+    document.head.appendChild(style);
 
 }
 
-createHUD();
-
 
 /* =========================================================
-   END GAME UI
-========================================================= */
-
-function createEndPanels() {
-
-    if (
-        document.getElementById(
-            "gameOverPanel"
-        )
-    ) {
-
-        gameOverPanel =
-            document.getElementById(
-                "gameOverPanel"
-            );
-
-        victoryPanel =
-            document.getElementById(
-                "victoryPanel"
-            );
-
-        return;
-
-    }
-
-    gameOverPanel =
-        document.createElement(
-            "div"
-        );
-
-    gameOverPanel.id =
-        "gameOverPanel";
-
-    gameOverPanel.innerHTML = `
-
-        <div class="endBox">
-
-            <div class="endTitle">
-                YOU DIED
-            </div>
-
-            <div class="endSub">
-                THE ROOM HAS CLAIMED YOU.
-                <br><br>
-                KILLS:
-                <span id="deathKills">
-                    0
-                </span>
-                <br><br>
-                CLICK TO RESTART
-            </div>
-
-        </div>
-
-    `;
-
-    victoryPanel =
-        document.createElement(
-            "div"
-        );
-
-    victoryPanel.id =
-        "victoryPanel";
-
-    victoryPanel.innerHTML = `
-
-        <div class="endBox">
-
-            <div class="endTitle">
-                YOU SURVIVED
-            </div>
-
-            <div class="endSub">
-                THE DOOR IS OPEN.
-                <br><br>
-                THE DARKNESS IS STILL BEHIND YOU.
-                <br><br>
-                KILLS:
-                <span id="victoryKills">
-                    0
-                </span>
-                <br><br>
-                CLICK TO RESTART
-            </div>
-
-        </div>
-
-    `;
-
-    document.body.appendChild(
-        gameOverPanel
-    );
-
-    document.body.appendChild(
-        victoryPanel
-    );
-
-
-    gameOverPanel.addEventListener(
-        "click",
-        restartEntireGame
-    );
-
-    victoryPanel.addEventListener(
-        "click",
-        restartEntireGame
-    );
-
-}
-
-createEndPanels();
-
-
-/* =========================================================
-   UI UPDATE
+   UPDATE HUD
 ========================================================= */
 
 function updateHUD() {
 
-    if (healthBar) {
+    const healthFill =
+        document.getElementById(
+            "healthFill"
+        );
 
-        healthBar.style.width =
-            (
-                player.health /
-                player.maxHealth *
-                100
+    const healthText =
+        document.getElementById(
+            "healthText"
+        );
+
+    const weaponName =
+        document.getElementById(
+            "weaponName"
+        );
+
+    const ammoText =
+        document.getElementById(
+            "ammoText"
+        );
+
+    const reloadText =
+        document.getElementById(
+            "reloadText"
+        );
+
+    const killHUD =
+        document.getElementById(
+            "killHUD"
+        );
+
+    const waveHUD =
+        document.getElementById(
+            "waveHUD"
+        );
+
+    if (healthFill) {
+
+        healthFill.style.width =
+            Math.max(
+                0,
+                player.health
             ) + "%";
 
     }
 
-    if (staminaBar) {
+    if (healthText) {
 
-        staminaBar.style.width =
-            (
-                player.stamina /
-                player.maxStamina *
-                100
-            ) + "%";
+        healthText.textContent =
+            Math.ceil(
+                player.health
+            ) +
+            " / " +
+            player.maxHealth;
 
     }
 
-    if (weaponText) {
+    const weapon =
+        weapons[currentWeapon];
 
-        weaponText.textContent =
-            currentWeapon.name;
+    if (weaponName) {
+
+        weaponName.textContent =
+            weapon.name;
 
     }
 
     if (ammoText) {
 
         ammoText.textContent =
-            currentWeapon.ammo +
+            weapon.ammo +
             " / " +
-            currentWeapon.reserve;
-
-    }
-
-    if (killText) {
-
-        killText.textContent =
-            zombiesKilled;
-
-    }
-
-    if (zombieCountText) {
-
-        zombieCountText.textContent =
-            zombies.filter(
-                zombie =>
-                    !zombie.dead
-            ).length;
+            weapon.reserve;
 
     }
 
     if (reloadText) {
 
-        reloadText.style.opacity =
+        reloadText.textContent =
             isReloading
-                ? "1"
-                : "0";
+                ? "RELOADING..."
+                : weapon.ammo === 0
+                    ? "PRESS R"
+                    : "READY";
 
     }
 
-    if (sprintText) {
+    if (killHUD) {
 
-        sprintText.style.opacity =
-            player.sprinting
-                ? "1"
-                : ".5";
+        killHUD.textContent =
+            "ZOMBIES: " +
+            player.kills;
+
+    }
+
+    if (waveHUD) {
+
+        waveHUD.textContent =
+            "WAVE " +
+            wave;
 
     }
 
@@ -1268,154 +884,88 @@ function updateHUD() {
 
 function resetGame() {
 
-    player.x =
-        2.5;
-
-    player.y =
-        2.5;
+    player.x = 2.5;
+    player.y = 2.5;
 
     player.angle =
         Math.PI / 2;
 
     player.health =
-        100;
+        player.maxHealth;
 
-    player.stamina =
-        100;
+    player.kills = 0;
 
-    player.sprinting =
-        false;
+    doorOpen = false;
 
-    player.damageFlash =
-        0;
+    doorProgress = 0;
 
+    flashlightOn = true;
 
-    doorOpen =
-        false;
+    battery = 100;
 
-    doorProgress =
-        0;
+    elapsed = 0;
 
+    apparitionActive = false;
 
-    flashlightOn =
-        true;
+    apparitionTimer = 0;
 
-    battery =
-        100;
+    interactionTarget = null;
 
+    footstepTimer = 0;
 
-    interactionTarget =
-        null;
+    damageFlash = 0;
 
+    hitMarkerTimer = 0;
 
-    apparitionActive =
-        false;
+    muzzleFlashTimer = 0;
 
-    apparitionTimer =
-        0;
+    recoil = 0;
 
+    shakeAmount = 0;
 
-    weaponCooldown =
-        0;
+    wave = 1;
 
-    reloadTimer =
-        0;
-
-    isReloading =
-        false;
-
-    weaponRecoil =
-        0;
-
-    muzzleFlashTimer =
-        0;
-
-    shellTimer =
-        0;
-
-
-    currentWeaponIndex =
-        0;
+    zombiesKilledThisWave = 0;
 
     currentWeapon =
-        weapons.pistol;
+        "pistol";
 
+    weapons.pistol.ammo = 12;
+    weapons.pistol.reserve = 72;
 
-    currentWeapon.ammo =
-        currentWeapon.magazineSize;
+    weapons.shotgun.ammo = 6;
+    weapons.shotgun.reserve = 36;
 
+    fireCooldown = 0;
 
-    weapons.pistol.ammo =
-        12;
+    reloadTimer = 0;
 
-    weapons.pistol.reserve =
-        72;
+    isReloading = false;
 
-    weapons.shotgun.ammo =
-        6;
+    shooting = false;
 
-    weapons.shotgun.reserve =
-        30;
+    keys.w = false;
+    keys.a = false;
+    keys.s = false;
+    keys.d = false;
 
-    weapons.rifle.ammo =
-        30;
+    zombies.length = 0;
 
-    weapons.rifle.reserve =
-        150;
+    spawnWave(1);
 
-
-    zombies.length =
-        0;
-
-    zombiesKilled =
-        0;
-
-    zombieIdCounter =
-        0;
-
-    totalZombiesSpawned =
-        0;
-
-
-    elapsed =
-        0;
-
-
-    resetKeys();
-
-
-    if (
-        apparitionTimeout !== null
-    ) {
+    if (apparitionTimeout) {
 
         clearTimeout(
             apparitionTimeout
         );
 
-        apparitionTimeout =
-            null;
+        apparitionTimeout = null;
 
     }
 
+    updateBatteryUI();
 
-    if (
-        gameOverPanel
-    ) {
-
-        gameOverPanel.style.display =
-            "none";
-
-    }
-
-    if (
-        victoryPanel
-    ) {
-
-        victoryPanel.style.display =
-            "none";
-
-    }
-
+    updateHUD();
 
     if (objective) {
 
@@ -1424,50 +974,104 @@ function resetGame() {
 
     }
 
+    hideInteraction();
 
-    updateBatteryUI();
+    createHUD();
 
     updateHUD();
 
-    hideInteraction();
-
-    hideMessage();
-
 }
 
 
 /* =========================================================
-   RESET KEYS
+   SPAWN WAVE
 ========================================================= */
 
-function resetKeys() {
+function spawnWave(
+    waveNumber
+) {
 
-    keys.w =
-        false;
+    const count =
+        Math.min(
+            3 + waveNumber * 2,
+            12
+        );
 
-    keys.a =
-        false;
+    zombies.length = 0;
 
-    keys.s =
-        false;
+    for (
+        let i = 0;
+        i < count;
+        i++
+    ) {
 
-    keys.d =
-        false;
+        const point =
+            zombieSpawnPoints[
+                i %
+                zombieSpawnPoints.length
+            ];
 
-    keys.shift =
-        false;
+        zombies.push({
 
-    mouseDown =
-        false;
+            x:
+                point.x +
+                (Math.random() - .5) *
+                .4,
 
-    aiming =
-        false;
+            y:
+                point.y +
+                (Math.random() - .5) *
+                .4,
+
+            radius: .25,
+
+            health:
+                100 +
+                (waveNumber - 1) *
+                20,
+
+            maxHealth:
+                100 +
+                (waveNumber - 1) *
+                20,
+
+            speed:
+                .55 +
+                Math.min(
+                    .25,
+                    waveNumber * .025
+                ),
+
+            attackCooldown:
+                Math.random() * .5,
+
+            attackRange:
+                .85,
+
+            damage:
+                8 +
+                waveNumber * 1.5,
+
+            alive: true,
+
+            hitFlash: 0,
+
+            animation:
+                Math.random() *
+                Math.PI * 2,
+
+            id:
+                Math.random()
+
+        });
+
+    }
 
 }
 
 
 /* =========================================================
-   KEYDOWN
+   KEYBOARD
 ========================================================= */
 
 window.addEventListener(
@@ -1478,79 +1082,28 @@ window.addEventListener(
             event.key.toLowerCase();
 
 
-        if (key === "w") {
+        /* MOVEMENT */
+
+        if (key === "w")
             keys.w = true;
-        }
 
-        if (key === "a") {
+        if (key === "a")
             keys.a = true;
-        }
 
-        if (key === "s") {
+        if (key === "s")
             keys.s = true;
-        }
 
-        if (key === "d") {
+        if (key === "d")
             keys.d = true;
-        }
-
-        if (key === "shift") {
-            keys.shift = true;
-        }
 
 
-        /* -----------------------------------------
-           RELOAD
-        ----------------------------------------- */
-
-        if (
-            key === "r" &&
-            gameStarted &&
-            !paused &&
-            !gameOver &&
-            !victory
-        ) {
-
-            event.preventDefault();
-
-            reloadWeapon();
-
-        }
-
-
-        /* -----------------------------------------
-           WEAPON SWITCH
-        ----------------------------------------- */
-
-        if (
-            (
-                key === "1" ||
-                key === "2" ||
-                key === "3"
-            ) &&
-            gameStarted &&
-            !paused
-        ) {
-
-            const index =
-                Number(key) - 1;
-
-            switchWeapon(
-                index
-            );
-
-        }
-
-
-        /* -----------------------------------------
-           FLASHLIGHT
-        ----------------------------------------- */
+        /* FLASHLIGHT */
 
         if (
             key === "f" &&
             gameStarted &&
             !paused &&
-            !event.repeat
+            !gameOver
         ) {
 
             event.preventDefault();
@@ -1560,18 +1113,14 @@ window.addEventListener(
         }
 
 
-        /* -----------------------------------------
-           INTERACTION
-        ----------------------------------------- */
+        /* INTERACT */
 
         if (
-            (
-                key === "e" ||
-                key === "enter"
-            ) &&
+            (key === "e" ||
+             key === "enter") &&
             gameStarted &&
             !paused &&
-            !event.repeat
+            !gameOver
         ) {
 
             event.preventDefault();
@@ -1583,31 +1132,70 @@ window.addEventListener(
         }
 
 
-        /* -----------------------------------------
-           ESC
-        ----------------------------------------- */
+        /* RELOAD */
+
+        if (
+            key === "r" &&
+            gameStarted &&
+            !paused &&
+            !gameOver
+        ) {
+
+            event.preventDefault();
+
+            reloadWeapon();
+
+        }
+
+
+        /* WEAPON 1 */
+
+        if (
+            key === "1" &&
+            gameStarted &&
+            !paused &&
+            !gameOver
+        ) {
+
+            switchWeapon(
+                "pistol"
+            );
+
+        }
+
+
+        /* WEAPON 2 */
+
+        if (
+            key === "2" &&
+            gameStarted &&
+            !paused &&
+            !gameOver
+        ) {
+
+            switchWeapon(
+                "shotgun"
+            );
+
+        }
+
+
+        /* ESC */
 
         if (
             key === "escape" &&
             gameStarted &&
-            !gameOver &&
-            !victory
+            !gameOver
         ) {
 
             event.preventDefault();
 
             if (
                 controlsPanel &&
-                !controlsPanel.classList.contains(
+                controlsPanel.classList.contains(
                     "hidden"
                 )
             ) {
-
-                controlsPanel.classList.add(
-                    "hidden"
-                );
-
-            } else {
 
                 togglePause();
 
@@ -1630,25 +1218,17 @@ window.addEventListener(
         const key =
             event.key.toLowerCase();
 
-        if (key === "w") {
+        if (key === "w")
             keys.w = false;
-        }
 
-        if (key === "a") {
+        if (key === "a")
             keys.a = false;
-        }
 
-        if (key === "s") {
+        if (key === "s")
             keys.s = false;
-        }
 
-        if (key === "d") {
+        if (key === "d")
             keys.d = false;
-        }
-
-        if (key === "shift") {
-            keys.shift = false;
-        }
 
     }
 );
@@ -1662,7 +1242,47 @@ window.addEventListener(
     "blur",
     function() {
 
-        resetKeys();
+        keys.w = false;
+        keys.a = false;
+        keys.s = false;
+        keys.d = false;
+
+        shooting = false;
+
+    }
+);
+
+
+/* =========================================================
+   MOUSE LOOK
+========================================================= */
+
+document.addEventListener(
+    "mousemove",
+    function(event) {
+
+        if (
+            !gameStarted ||
+            paused ||
+            gameOver
+        ) {
+
+            return;
+
+        }
+
+        if (
+            document.pointerLockElement !==
+            canvas
+        ) {
+
+            return;
+
+        }
+
+        player.angle +=
+            event.movementX *
+            0.0028;
 
     }
 );
@@ -1677,9 +1297,7 @@ function requestGamePointerLock() {
     if (
         !gameStarted ||
         paused ||
-        gameOver ||
-        victory ||
-        !canvas
+        gameOver
     ) {
 
         return;
@@ -1687,6 +1305,7 @@ function requestGamePointerLock() {
     }
 
     if (
+        !canvas ||
         typeof canvas.requestPointerLock !==
         "function"
     ) {
@@ -1710,35 +1329,30 @@ function requestGamePointerLock() {
 
     }
 
-    pointerLockPending =
-        true;
+    pointerLockPending = true;
 
     try {
 
-        const promise =
+        const result =
             canvas.requestPointerLock();
 
         if (
-            promise &&
-            typeof promise.catch ===
+            result &&
+            typeof result.catch ===
             "function"
         ) {
 
-            promise.catch(
-                function() {
-
-                    pointerLockPending =
-                        false;
-
-                }
+            result.catch(
+                function() {}
             );
 
         }
 
     } catch (error) {
 
-        pointerLockPending =
-            false;
+        console.warn(
+            "Pointer lock unavailable."
+        );
 
     }
 
@@ -1756,53 +1370,8 @@ function requestGamePointerLock() {
 
 
 /* =========================================================
-   MOUSE LOOK
-========================================================= */
-
-document.addEventListener(
-    "mousemove",
-    function(event) {
-
-        if (
-            !gameStarted ||
-            paused ||
-            gameOver ||
-            victory
-        ) {
-
-            return;
-
-        }
-
-        if (
-            document.pointerLockElement ===
-            canvas
-        ) {
-
-            let sensitivity =
-                aiming
-                    ? 0.0014
-                    : 0.0026;
-
-            player.angle +=
-                event.movementX *
-                sensitivity;
-
-            player.angle =
-                normalizeAngle(
-                    player.angle
-                );
-
-            return;
-
-        }
-
-    }
-);
-
-
-/* =========================================================
-   CANVAS MOUSE DOWN
+   MOUSE DOWN
+   IMPORTANT FIX
 ========================================================= */
 
 if (canvas) {
@@ -1814,15 +1383,16 @@ if (canvas) {
             if (
                 !gameStarted ||
                 paused ||
-                gameOver ||
-                victory
+                gameOver
             ) {
 
                 return;
 
             }
 
-            event.preventDefault();
+            /*
+             * First click locks mouse.
+             */
 
             if (
                 document.pointerLockElement !==
@@ -1831,25 +1401,22 @@ if (canvas) {
 
                 requestGamePointerLock();
 
+                return;
+
             }
+
+
+            /*
+             * LEFT CLICK = SHOOT
+             */
 
             if (
                 event.button === 0
             ) {
 
-                mouseDown =
-                    true;
+                shooting = true;
 
                 shoot();
-
-            }
-
-            if (
-                event.button === 2
-            ) {
-
-                aiming =
-                    true;
 
             }
 
@@ -1865,17 +1432,7 @@ if (canvas) {
                 event.button === 0
             ) {
 
-                mouseDown =
-                    false;
-
-            }
-
-            if (
-                event.button === 2
-            ) {
-
-                aiming =
-                    false;
+                shooting = false;
 
             }
 
@@ -1884,31 +1441,10 @@ if (canvas) {
 
 
     canvas.addEventListener(
-        "contextmenu",
-        function(event) {
+        "mouseleave",
+        function() {
 
-            event.preventDefault();
-
-        }
-    );
-
-
-    canvas.addEventListener(
-        "click",
-        function(event) {
-
-            if (
-                !gameStarted ||
-                paused ||
-                gameOver ||
-                victory
-            ) {
-
-                return;
-
-            }
-
-            requestGamePointerLock();
+            shooting = false;
 
         }
     );
@@ -1917,27 +1453,57 @@ if (canvas) {
 
 
 /* =========================================================
+   POINTER LOCK CHANGE
+========================================================= */
+
+document.addEventListener(
+    "pointerlockchange",
+    function() {
+
+        pointerLockPending =
+            false;
+
+        if (!gameStarted) {
+            return;
+        }
+
+        if (
+            document.pointerLockElement !==
+            canvas
+        ) {
+
+            shooting = false;
+
+            if (!paused && !gameOver) {
+
+                showMessage(
+                    "Mouse released.",
+                    "Click the game screen to look around."
+                );
+
+            }
+
+        } else {
+
+            hideMessage();
+
+        }
+
+    }
+);
+
+
+/* =========================================================
    START BUTTON
 ========================================================= */
 
 if (startButton) {
-
-    startButton.style.pointerEvents =
-        "auto";
-
-    startButton.style.position =
-        "relative";
-
-    startButton.style.zIndex =
-        "1200";
 
     startButton.addEventListener(
         "click",
         function(event) {
 
             event.preventDefault();
-
-            event.stopPropagation();
 
             startGame();
 
@@ -1959,36 +1525,13 @@ function startGame() {
 
     }
 
-    gameStarted =
-        true;
+    gameStarted = true;
 
-    paused =
-        false;
+    paused = false;
 
-    gameOver =
-        false;
-
-    victory =
-        false;
-
+    gameOver = false;
 
     resetGame();
-
-
-    /* -----------------------------------------
-       CANVAS NOW ACCEPTS MOUSE
-    ----------------------------------------- */
-
-    if (canvas) {
-
-        canvas.style.pointerEvents =
-            "auto";
-
-        canvas.style.zIndex =
-            "1";
-
-    }
-
 
     if (mainMenu) {
 
@@ -1998,19 +1541,15 @@ function startGame() {
         mainMenu.style.opacity =
             "0";
 
-        mainMenu.style.pointerEvents =
-            "none";
-
         setTimeout(
             function() {
 
-                if (mainMenu) {
+                mainMenu.classList.add(
+                    "hidden"
+                );
 
-                    mainMenu.classList.add(
-                        "hidden"
-                    );
-
-                }
+                mainMenu.style.opacity =
+                    "";
 
             },
             750
@@ -2018,23 +1557,29 @@ function startGame() {
 
     }
 
+    if (objective) {
+
+        objective.textContent =
+            "Find a way out.";
+
+    }
 
     showMessage(
         "The room is quiet.",
-        "Find a way out."
+        "Something is moving in the darkness."
     );
-
 
     startAudio();
 
-    spawnInitialZombies();
+    /*
+     * Pointer lock happens after
+     * user button click.
+     */
 
-
-    /* Browser allows pointer lock
-       because this function came
-       directly from ENTER click. */
-
-    requestGamePointerLock();
+    setTimeout(
+        requestGamePointerLock,
+        50
+    );
 
 }
 
@@ -2047,8 +1592,7 @@ function togglePause() {
 
     if (
         !gameStarted ||
-        gameOver ||
-        victory
+        gameOver
     ) {
 
         return;
@@ -2060,16 +1604,13 @@ function togglePause() {
 
     if (paused) {
 
-        resetKeys();
+        shooting = false;
 
         if (pauseMenu) {
 
             pauseMenu.classList.remove(
                 "hidden"
             );
-
-            pauseMenu.style.zIndex =
-                "900";
 
         }
 
@@ -2100,6 +1641,11 @@ function togglePause() {
 
         requestGamePointerLock();
 
+        showMessage(
+            "You are still here.",
+            "The dead are waiting."
+        );
+
     }
 
 }
@@ -2113,12 +1659,9 @@ if (resumeButton) {
 
     resumeButton.addEventListener(
         "click",
-        function(event) {
+        function() {
 
-            event.preventDefault();
-
-            paused =
-                false;
+            paused = false;
 
             if (pauseMenu) {
 
@@ -2144,63 +1687,33 @@ if (restartButton) {
 
     restartButton.addEventListener(
         "click",
-        function(event) {
+        function() {
 
-            event.preventDefault();
+            resetGame();
 
-            restartEntireGame();
+            gameOver = false;
+
+            gameStarted = true;
+
+            paused = false;
+
+            if (pauseMenu) {
+
+                pauseMenu.classList.add(
+                    "hidden"
+                );
+
+            }
+
+            showMessage(
+                "You survived.",
+                "But the room has changed."
+            );
+
+            requestGamePointerLock();
 
         }
     );
-
-}
-
-
-function restartEntireGame() {
-
-    gameStarted =
-        true;
-
-    paused =
-        false;
-
-    gameOver =
-        false;
-
-    victory =
-        false;
-
-
-    if (pauseMenu) {
-
-        pauseMenu.classList.add(
-            "hidden"
-        );
-
-    }
-
-    if (mainMenu) {
-
-        mainMenu.classList.add(
-            "hidden"
-        );
-
-        mainMenu.style.opacity =
-            "0";
-
-        mainMenu.style.pointerEvents =
-            "none";
-
-    }
-
-
-    resetGame();
-
-    startAudio();
-
-    spawnInitialZombies();
-
-    requestGamePointerLock();
 
 }
 
@@ -2228,6 +1741,7 @@ if (controlsButton) {
 
 }
 
+
 if (pauseControlsButton) {
 
     pauseControlsButton.addEventListener(
@@ -2246,6 +1760,7 @@ if (pauseControlsButton) {
     );
 
 }
+
 
 if (closeControls) {
 
@@ -2271,10 +1786,7 @@ if (closeControls) {
    COLLISION
 ========================================================= */
 
-function isWall(
-    x,
-    y
-) {
+function isWall(x, y) {
 
     const mapX =
         Math.floor(x);
@@ -2296,9 +1808,7 @@ function isWall(
     const tile =
         MAP[mapY][mapX];
 
-    if (
-        tile === "#"
-    ) {
+    if (tile === "#") {
 
         return true;
 
@@ -2318,152 +1828,77 @@ function isWall(
 }
 
 
-/* =========================================================
-   MOVE COLLISION
-========================================================= */
+function canMoveTo(x, y) {
 
-function canMoveTo(
-    x,
-    y,
-    radius = player.radius
-) {
+    const r =
+        player.radius;
 
-    const points = [
+    return (
 
-        [x - radius, y - radius],
+        !isWall(x - r, y - r) &&
+        !isWall(x + r, y - r) &&
+        !isWall(x - r, y + r) &&
+        !isWall(x + r, y + r)
 
-        [x + radius, y - radius],
-
-        [x - radius, y + radius],
-
-        [x + radius, y + radius],
-
-        [x, y - radius],
-
-        [x, y + radius],
-
-        [x - radius, y],
-
-        [x + radius, y]
-
-    ];
-
-    for (
-        const point of points
-    ) {
-
-        if (
-            isWall(
-                point[0],
-                point[1]
-            )
-        ) {
-
-            return false;
-
-        }
-
-    }
-
-    return true;
+    );
 
 }
 
 
 /* =========================================================
-   MOVEMENT
+   ZOMBIE COLLISION
+========================================================= */
+
+function zombieCanMoveTo(
+    zombie,
+    x,
+    y
+) {
+
+    const r =
+        zombie.radius;
+
+    return (
+
+        !isWall(x - r, y - r) &&
+        !isWall(x + r, y - r) &&
+        !isWall(x - r, y + r) &&
+        !isWall(x + r, y + r)
+
+    );
+
+}
+
+
+/* =========================================================
+   PLAYER MOVEMENT
 ========================================================= */
 
 function updateMovement(dt) {
 
+    let forward = 0;
+    let strafe = 0;
+
+    if (keys.w)
+        forward += 1;
+
+    if (keys.s)
+        forward -= 1;
+
+    if (keys.d)
+        strafe += 1;
+
+    if (keys.a)
+        strafe -= 1;
+
     if (
-        !gameStarted ||
-        paused ||
-        gameOver ||
-        victory
+        forward === 0 &&
+        strafe === 0
     ) {
 
         return;
 
     }
-
-    let forward =
-        0;
-
-    let strafe =
-        0;
-
-    if (keys.w) {
-        forward += 1;
-    }
-
-    if (keys.s) {
-        forward -= 1;
-    }
-
-    if (keys.d) {
-        strafe += 1;
-    }
-
-    if (keys.a) {
-        strafe -= 1;
-    }
-
-
-    const moving =
-        forward !== 0 ||
-        strafe !== 0;
-
-
-    const wantsSprint =
-        keys.shift &&
-        moving &&
-        player.stamina > 0;
-
-
-    player.sprinting =
-        wantsSprint;
-
-
-    let speed =
-        2.25;
-
-
-    if (wantsSprint) {
-
-        speed =
-            3.65;
-
-        player.stamina -=
-            28 * dt;
-
-    } else {
-
-        player.stamina +=
-            18 * dt;
-
-    }
-
-
-    player.stamina =
-        Math.max(
-            0,
-            Math.min(
-                player.maxStamina,
-                player.stamina
-            )
-        );
-
-
-    if (!moving) {
-
-        player.sprinting =
-            false;
-
-        return;
-
-    }
-
 
     const length =
         Math.hypot(
@@ -2471,12 +1906,17 @@ function updateMovement(dt) {
             strafe
         );
 
-    forward /=
-        length;
+    forward /= length;
+    strafe /= length;
 
-    strafe /=
-        length;
+    let speed =
+        player.speed;
 
+    if (keys.s) {
+
+        speed *= .9;
+
+    }
 
     const cos =
         Math.cos(
@@ -2488,7 +1928,6 @@ function updateMovement(dt) {
             player.angle
         );
 
-
     const moveX =
         (
             cos * forward -
@@ -2496,7 +1935,6 @@ function updateMovement(dt) {
         ) *
         speed *
         dt;
-
 
     const moveY =
         (
@@ -2506,16 +1944,15 @@ function updateMovement(dt) {
         speed *
         dt;
 
-
     const nextX =
         player.x +
         moveX;
-
 
     const nextY =
         player.y +
         moveY;
 
+    let moved = false;
 
     if (
         canMoveTo(
@@ -2527,8 +1964,9 @@ function updateMovement(dt) {
         player.x =
             nextX;
 
-    }
+        moved = true;
 
+    }
 
     if (
         canMoveTo(
@@ -2539,6 +1977,25 @@ function updateMovement(dt) {
 
         player.y =
             nextY;
+
+        moved = true;
+
+    }
+
+    if (moved) {
+
+        footstepTimer -= dt;
+
+        if (
+            footstepTimer <= 0
+        ) {
+
+            playFootstep();
+
+            footstepTimer =
+                .42;
+
+        }
 
     }
 
@@ -2551,12 +2008,10 @@ function updateMovement(dt) {
 
 function findDoor() {
 
-    let best =
-        null;
+    let best = null;
 
     let bestDistance =
         Infinity;
-
 
     for (
         let y = 0;
@@ -2578,7 +2033,6 @@ function findDoor() {
 
             }
 
-
             const dx =
                 x + .5 -
                 player.x;
@@ -2587,13 +2041,11 @@ function findDoor() {
                 y + .5 -
                 player.y;
 
-
             const distance =
                 Math.hypot(
                     dx,
                     dy
                 );
-
 
             if (
                 distance <
@@ -2605,12 +2057,8 @@ function findDoor() {
 
                 best = {
 
-                    x:
-                        x + .5,
-
-                    y:
-                        y + .5,
-
+                    x: x + .5,
+                    y: y + .5,
                     distance
 
                 };
@@ -2620,7 +2068,6 @@ function findDoor() {
         }
 
     }
-
 
     return best;
 
@@ -2636,109 +2083,87 @@ function updateInteraction() {
     if (
         !gameStarted ||
         paused ||
-        gameOver ||
-        victory
+        gameOver
     ) {
+
+        hideInteraction();
 
         interactionTarget =
             null;
 
-        hideInteraction();
-
         return;
 
     }
-
 
     const door =
         findDoor();
 
-
     if (
-        !door ||
-        door.distance > 1.65
+        door &&
+        door.distance < 1.65
     ) {
 
-        interactionTarget =
-            null;
+        const dx =
+            door.x -
+            player.x;
 
-        hideInteraction();
+        const dy =
+            door.y -
+            player.y;
 
-        return;
+        const angle =
+            Math.atan2(
+                dy,
+                dx
+            );
+
+        const difference =
+            Math.abs(
+                normalizeAngle(
+                    angle -
+                    player.angle
+                )
+            );
+
+        if (
+            difference < .75
+        ) {
+
+            interactionTarget =
+                "door";
+
+            if (doorOpen) {
+
+                interactionMain.textContent =
+                    "DOOR";
+
+                interactionSub.textContent =
+                    "The way is open";
+
+            } else {
+
+                interactionMain.textContent =
+                    "OPEN DOOR";
+
+                interactionSub.textContent =
+                    "Press E or ENTER";
+
+            }
+
+            interaction.classList.add(
+                "visible"
+            );
+
+            return;
+
+        }
 
     }
-
-
-    const dx =
-        door.x -
-        player.x;
-
-    const dy =
-        door.y -
-        player.y;
-
-
-    const targetAngle =
-        Math.atan2(
-            dy,
-            dx
-        );
-
-
-    const difference =
-        Math.abs(
-            normalizeAngle(
-                targetAngle -
-                player.angle
-            )
-        );
-
-
-    if (
-        difference > .85
-    ) {
-
-        interactionTarget =
-            null;
-
-        hideInteraction();
-
-        return;
-
-    }
-
 
     interactionTarget =
-        "door";
+        null;
 
-
-    if (interactionMain) {
-
-        interactionMain.textContent =
-            doorOpen
-                ? "EXIT"
-                : "OPEN DOOR";
-
-    }
-
-
-    if (interactionSub) {
-
-        interactionSub.textContent =
-            doorOpen
-                ? "Press E to escape"
-                : "Press E or ENTER";
-
-    }
-
-
-    if (interaction) {
-
-        interaction.classList.add(
-            "visible"
-        );
-
-    }
+    hideInteraction();
 
 }
 
@@ -2758,29 +2183,11 @@ function interact() {
 
     }
 
-
-    const door =
-        findDoor();
-
-
-    if (
-        !door ||
-        door.distance > 1.8
-    ) {
-
-        return;
-
-    }
-
-
     if (!doorOpen) {
 
-        doorOpen =
-            true;
+        doorOpen = true;
 
-        doorProgress =
-            1;
-
+        doorProgress = 1;
 
         if (objective) {
 
@@ -2789,40 +2196,23 @@ function interact() {
 
         }
 
-
         showMessage(
             "The door opens.",
             "You should not have done that."
         );
 
-
         playDoorSound();
 
+        shakeAmount = 8;
 
-        spawnWave(
-            2
+        setTimeout(
+            function() {
+
+                shakeAmount = 0;
+
+            },
+            450
         );
-
-
-        if (game) {
-
-            game.classList.add(
-                "shake"
-            );
-
-            setTimeout(
-                function() {
-
-                    game.classList.remove(
-                        "shake"
-                    );
-
-                },
-                500
-            );
-
-        }
-
 
         updateInteraction();
 
@@ -2830,210 +2220,62 @@ function interact() {
 
     }
 
-
-    if (
-        zombies.filter(
-            zombie =>
-                !zombie.dead
-        ).length === 0
-    ) {
-
-        winGame();
-
-    } else {
-
-        showMessage(
-            "Something is blocking the exit.",
-            "Kill the remaining hostiles."
-        );
-
-    }
-
-}
-
-
-/* =========================================================
-   FLASHLIGHT
-========================================================= */
-
-function toggleFlashlight() {
-
-    if (
-        battery <= 0
-    ) {
-
-        flashlightOn =
-            false;
-
-        showMessage(
-            "The flashlight is dead.",
-            "You are not alone."
-        );
-
-        return;
-
-    }
-
-
-    flashlightOn =
-        !flashlightOn;
-
-
-    playFlashlightClick();
-
-
     showMessage(
-        flashlightOn
-            ? "Flashlight ON"
-            : "Flashlight OFF",
-        flashlightOn
-            ? "The darkness retreats."
-            : "The darkness returns."
+        "The darkness continues.",
+        "Keep moving."
     );
 
 }
 
 
 /* =========================================================
-   BATTERY
-========================================================= */
-
-function updateBattery(
-    dt
-) {
-
-    if (!flashlightOn) {
-
-        return;
-
-    }
-
-
-    battery -=
-        dt * .09;
-
-
-    battery =
-        Math.max(
-            0,
-            battery
-        );
-
-
-    if (
-        battery <= 0
-    ) {
-
-        flashlightOn =
-            false;
-
-        showMessage(
-            "The flashlight dies.",
-            "You are not alone."
-        );
-
-    }
-
-
-    updateBatteryUI();
-
-}
-
-
-/* =========================================================
-   BATTERY UI
-========================================================= */
-
-function updateBatteryUI() {
-
-    if (!batteryFill) {
-
-        return;
-
-    }
-
-
-    const value =
-        Math.max(
-            0,
-            Math.min(
-                100,
-                battery
-            )
-        );
-
-
-    batteryFill.style.width =
-        value + "%";
-
-
-    if (
-        value < 20
-    ) {
-
-        document.body.classList.add(
-            "lowBattery"
-        );
-
-    } else {
-
-        document.body.classList.remove(
-            "lowBattery"
-        );
-
-    }
-
-}
-
-
-/* =========================================================
-   WEAPON SWITCH
+   SWITCH WEAPON
 ========================================================= */
 
 function switchWeapon(
-    index
+    weaponName
 ) {
 
     if (
-        index < 0 ||
-        index >= weaponOrder.length
+        !weapons[weaponName]
     ) {
 
         return;
 
     }
-
 
     if (
-        isReloading
+        currentWeapon ===
+        weaponName
     ) {
 
         return;
 
     }
 
+    if (isReloading) {
 
-    currentWeaponIndex =
-        index;
+        return;
+
+    }
 
     currentWeapon =
-        weapons[
-            weaponOrder[index]
-        ];
+        weaponName;
 
+    recoil = 0;
 
-    weaponCooldown =
-        0;
-
-
-    updateHUD();
-
+    playWeaponSwitch();
 
     showMessage(
-        currentWeapon.name,
-        currentWeapon.ammo +
-        " rounds ready."
+        weapons[
+            weaponName
+        ].name,
+        weaponName === "pistol"
+            ? "Fast and accurate."
+            : "Heavy damage. Wide spread."
     );
+
+    updateHUD();
 
 }
 
@@ -3044,27 +2286,45 @@ function switchWeapon(
 
 function reloadWeapon() {
 
+    const weapon =
+        weapons[currentWeapon];
+
+    if (isReloading) {
+
+        return;
+
+    }
+
     if (
-        isReloading ||
-        currentWeapon.ammo >=
-        currentWeapon.magazineSize ||
-        currentWeapon.reserve <= 0
+        weapon.ammo >=
+        weapon.magazineSize
     ) {
 
         return;
 
     }
 
+    if (
+        weapon.reserve <= 0
+    ) {
 
-    isReloading =
-        true;
+        showMessage(
+            "No ammunition.",
+            "Find another weapon."
+        );
+
+        return;
+
+    }
+
+    isReloading = true;
 
     reloadTimer =
-        currentWeapon.reloadTime;
+        weapon.reloadTime;
 
+    shooting = false;
 
     playReloadSound();
-
 
     updateHUD();
 
@@ -3075,9 +2335,7 @@ function reloadWeapon() {
    UPDATE RELOAD
 ========================================================= */
 
-function updateReload(
-    dt
-) {
+function updateReload(dt) {
 
     if (!isReloading) {
 
@@ -3085,42 +2343,37 @@ function updateReload(
 
     }
 
-
-    reloadTimer -=
-        dt;
-
+    reloadTimer -= dt;
 
     if (
         reloadTimer <= 0
     ) {
 
+        const weapon =
+            weapons[currentWeapon];
+
         const needed =
-            currentWeapon.magazineSize -
-            currentWeapon.ammo;
+            weapon.magazineSize -
+            weapon.ammo;
 
-
-        const available =
+        const amount =
             Math.min(
                 needed,
-                currentWeapon.reserve
+                weapon.reserve
             );
 
+        weapon.ammo +=
+            amount;
 
-        currentWeapon.ammo +=
-            available;
+        weapon.reserve -=
+            amount;
 
-        currentWeapon.reserve -=
-            available;
+        isReloading = false;
 
-
-        isReloading =
-            false;
-
-        reloadTimer =
-            0;
-
-
-        playReloadCompleteSound();
+        showMessage(
+            "Reloaded.",
+            weapon.name
+        );
 
         updateHUD();
 
@@ -3138,91 +2391,104 @@ function shoot() {
     if (
         !gameStarted ||
         paused ||
-        gameOver ||
-        victory
+        gameOver
     ) {
 
         return;
 
     }
-
 
     if (
-        isReloading
+        document.pointerLockElement !==
+        canvas
     ) {
+
+        requestGamePointerLock();
 
         return;
 
     }
 
+    if (isReloading) {
+
+        return;
+
+    }
 
     if (
-        weaponCooldown > 0
+        fireCooldown > 0
     ) {
 
         return;
 
     }
 
+    const weapon =
+        weapons[currentWeapon];
 
     if (
-        currentWeapon.ammo <= 0
+        weapon.ammo <= 0
     ) {
 
-        playEmptyGunSound();
+        playEmptyGun();
 
-        reloadWeapon();
+        showMessage(
+            "CLICK.",
+            "Out of ammunition. Press R."
+        );
+
+        fireCooldown =
+            .18;
 
         return;
 
     }
 
+    weapon.ammo--;
 
-    currentWeapon.ammo--;
-
-    weaponCooldown =
-        1 /
-        currentWeapon.fireRate;
-
-
-    weaponRecoil =
-        currentWeapon.recoil;
-
+    fireCooldown =
+        weapon.fireRate;
 
     muzzleFlashTimer =
-        .07;
+        .075;
 
+    recoil =
+        weapon.recoil;
 
-    playGunSound(
-        currentWeapon.id
+    shakeAmount =
+        Math.max(
+            shakeAmount,
+            weapon.recoil * .35
+        );
+
+    playGunshot(
+        weapon
     );
 
+    /*
+     * Multiple pellets for shotgun.
+     */
 
     for (
-        let i = 0;
-        i < currentWeapon.pellets;
-        i++
+        let pellet = 0;
+        pellet < weapon.pellets;
+        pellet++
     ) {
 
-        const spread =
-            (
-                Math.random() -
-                .5
-            ) *
-            currentWeapon.spread;
-
-        const angle =
+        const shotAngle =
             player.angle +
-            spread;
+            (
+                Math.random() * 2 -
+                1
+            ) *
+            weapon.spread;
 
-        shootRay(
-            angle,
-            currentWeapon.damage,
-            currentWeapon.range
+        processBullet(
+            shotAngle,
+            weapon.damage
         );
 
     }
-
 
     updateHUD();
 
@@ -3230,55 +2496,26 @@ function shoot() {
 
 
 /* =========================================================
-   AUTOMATIC FIRE
+   BULLET
 ========================================================= */
 
-function updateShooting(
-    dt
-) {
-
-    if (
-        !mouseDown ||
-        !currentWeapon.automatic
-    ) {
-
-        return;
-
-    }
-
-
-    shoot();
-
-}
-
-
-/* =========================================================
-   SHOOT RAY
-========================================================= */
-
-function shootRay(
+function processBullet(
     angle,
-    damage,
-    range
+    damage
 ) {
 
-    let closest =
-        null;
+    let bestZombie = null;
 
-    let closestDistance =
+    let bestDistance =
         Infinity;
-
 
     for (
         const zombie of zombies
     ) {
 
-        if (zombie.dead) {
-
+        if (!zombie.alive) {
             continue;
-
         }
-
 
         const dx =
             zombie.x -
@@ -3288,23 +2525,20 @@ function shootRay(
             zombie.y -
             player.y;
 
-
         const distance =
             Math.hypot(
                 dx,
                 dy
             );
 
-
         if (
             distance >
-            range
+            25
         ) {
 
             continue;
 
         }
-
 
         const targetAngle =
             Math.atan2(
@@ -3312,8 +2546,7 @@ function shootRay(
                 dx
             );
 
-
-        const angleDifference =
+        const difference =
             Math.abs(
                 normalizeAngle(
                     targetAngle -
@@ -3321,17 +2554,18 @@ function shootRay(
                 )
             );
 
-
         const hitWidth =
             Math.atan2(
-                zombie.radius * 1.5,
+                zombie.radius * 1.3,
                 distance
             );
 
-
         if (
-            angleDifference <
-            hitWidth
+            difference <
+            Math.max(
+                hitWidth,
+                .018
+            )
         ) {
 
             if (
@@ -3345,14 +2579,14 @@ function shootRay(
 
                 if (
                     distance <
-                    closestDistance
+                    bestDistance
                 ) {
 
-                    closest =
-                        zombie;
-
-                    closestDistance =
+                    bestDistance =
                         distance;
+
+                    bestZombie =
+                        zombie;
 
                 }
 
@@ -3362,15 +2596,30 @@ function shootRay(
 
     }
 
+    if (bestZombie) {
 
-    if (closest) {
+        bestZombie.health -=
+            damage;
 
-        damageZombie(
-            closest,
-            damage
-        );
+        bestZombie.hitFlash =
+            .12;
+
+        hitMarkerTimer =
+            .12;
 
         showHitMarker();
+
+        playZombieHit();
+
+        if (
+            bestZombie.health <= 0
+        ) {
+
+            killZombie(
+                bestZombie
+            );
+
+        }
 
     }
 
@@ -3402,9 +2651,8 @@ function hasLineOfSight(
 
     const steps =
         Math.ceil(
-            distance * 25
+            distance * 30
         );
-
 
     for (
         let i = 1;
@@ -3423,7 +2671,6 @@ function hasLineOfSight(
             y1 +
             dy * t;
 
-
         if (
             isWall(
                 x,
@@ -3437,54 +2684,7 @@ function hasLineOfSight(
 
     }
 
-
     return true;
-
-}
-
-
-/* =========================================================
-   DAMAGE ZOMBIE
-========================================================= */
-
-function damageZombie(
-    zombie,
-    damage
-) {
-
-    if (
-        zombie.dead
-    ) {
-
-        return;
-
-    }
-
-
-    zombie.health -=
-        damage;
-
-
-    zombie.hitFlash =
-        .12;
-
-
-    zombie.alert =
-        true;
-
-
-    playZombieHitSound();
-
-
-    if (
-        zombie.health <= 0
-    ) {
-
-        killZombie(
-            zombie
-        );
-
-    }
 
 }
 
@@ -3497,364 +2697,105 @@ function killZombie(
     zombie
 ) {
 
-    if (
-        zombie.dead
-    ) {
+    if (!zombie.alive) {
 
         return;
 
     }
 
+    zombie.alive = false;
 
-    zombie.dead =
-        true;
+    player.kills++;
 
-    zombie.deathTimer =
-        .8;
+    zombiesKilledThisWave++;
 
+    showMessage(
+        "ZOMBIE DOWN",
+        player.kills +
+        " killed"
+    );
 
-    zombiesKilled++;
-
-
-    playZombieDeathSound();
-
-
-    if (objective) {
-
-        const remaining =
-            zombies.filter(
-                z =>
-                    !z.dead
-            ).length;
-
-
-        if (
-            remaining === 0 &&
-            doorOpen
-        ) {
-
-            objective.textContent =
-                "Reach the exit.";
-
-        }
-
-    }
-
+    playZombieDeath();
 
     updateHUD();
 
-}
+    /*
+     * Wave complete
+     */
 
+    const alive =
+        zombies.filter(
+            z => z.alive
+        ).length;
 
-/* =========================================================
-   SPAWN INITIAL ZOMBIES
-========================================================= */
-
-function spawnInitialZombies() {
-
-    spawnZombie(
-        10.5,
-        2.5,
-        "normal"
-    );
-
-    spawnZombie(
-        12.5,
-        5.5,
-        "normal"
-    );
-
-    spawnZombie(
-        8.5,
-        9.5,
-        "fast"
-    );
-
-}
-
-
-/* =========================================================
-   SPAWN WAVE
-========================================================= */
-
-function spawnWave(
-    amount
-) {
-
-    for (
-        let i = 0;
-        i < amount;
-        i++
+    if (
+        alive === 0
     ) {
 
-        if (
-            zombies.filter(
-                z =>
-                    !z.dead
-            ).length >=
-            MAX_ZOMBIES
-        ) {
+        wave++;
 
-            break;
+        zombiesKilledThisWave =
+            0;
 
-        }
+        setTimeout(
+            function() {
 
+                if (
+                    gameStarted &&
+                    !gameOver
+                ) {
 
-        const position =
-            findSpawnPosition();
+                    spawnWave(
+                        wave
+                    );
 
+                    showMessage(
+                        "WAVE " +
+                        wave,
+                        "They are coming."
+                    );
 
-        spawnZombie(
-            position.x,
-            position.y,
-            randomZombieType()
+                    updateHUD();
+
+                }
+
+            },
+            1600
         );
 
     }
 
-
-    updateHUD();
-
 }
 
 
 /* =========================================================
-   RANDOM ZOMBIE TYPE
+   ZOMBIE UPDATE
 ========================================================= */
 
-function randomZombieType() {
-
-    const roll =
-        Math.random();
-
+function updateZombies(dt) {
 
     if (
-        roll < .65
-    ) {
-
-        return "normal";
-
-    }
-
-
-    if (
-        roll < .88
-    ) {
-
-        return "fast";
-
-    }
-
-
-    return "brute";
-
-}
-
-
-/* =========================================================
-   SPAWN POSITION
-========================================================= */
-
-function findSpawnPosition() {
-
-    for (
-        let attempt = 0;
-        attempt < 100;
-        attempt++
-    ) {
-
-        const x =
-            1.5 +
-            Math.random() *
-            (
-                MAP_WIDTH -
-                3
-            );
-
-        const y =
-            1.5 +
-            Math.random() *
-            (
-                MAP_HEIGHT -
-                3
-            );
-
-
-        if (
-            !canMoveTo(
-                x,
-                y,
-                .3
-            )
-        ) {
-
-            continue;
-
-        }
-
-
-        const distance =
-            Math.hypot(
-                x -
-                player.x,
-                y -
-                player.y
-            );
-
-
-        if (
-            distance <
-            5
-        ) {
-
-            continue;
-
-        }
-
-
-        return {
-            x,
-            y
-        };
-
-    }
-
-
-    return {
-        x: 11.5,
-        y: 10.5
-    };
-
-}
-
-
-/* =========================================================
-   SPAWN ZOMBIE
-========================================================= */
-
-function spawnZombie(
-    x,
-    y,
-    typeName = "normal"
-) {
-
-    if (
-        zombies.filter(
-            z =>
-                !z.dead
-        ).length >=
-        MAX_ZOMBIES
+        !gameStarted ||
+        paused ||
+        gameOver
     ) {
 
         return;
 
     }
-
-
-    const type =
-        ZOMBIE_TYPES[typeName] ||
-        ZOMBIE_TYPES.normal;
-
-
-    const zombie = {
-
-        id:
-            ++zombieIdCounter,
-
-        type:
-            typeName,
-
-        x,
-
-        y,
-
-        radius:
-            type.radius,
-
-        health:
-            type.health,
-
-        maxHealth:
-            type.health,
-
-        speed:
-            type.speed,
-
-        damage:
-            type.damage,
-
-        attackRange:
-            type.attackRange,
-
-        attackCooldown:
-            type.attackCooldown,
-
-        attackTimer:
-            Math.random(),
-
-        scale:
-            type.scale,
-
-        dead:
-            false,
-
-        deathTimer:
-            0,
-
-        hitFlash:
-            0,
-
-        alert:
-            false,
-
-        wanderAngle:
-            Math.random() *
-            Math.PI * 2,
-
-        wanderTimer:
-            1 +
-
-            Math.random() * 3,
-
-        attackAnimation:
-            0
-
-    };
-
-
-    zombies.push(
-        zombie
-    );
-
-
-    totalZombiesSpawned++;
-
-}
-
-
-/* =========================================================
-   UPDATE ZOMBIES
-========================================================= */
-
-function updateZombies(
-    dt
-) {
 
     for (
         const zombie of zombies
     ) {
 
-        if (
-            zombie.dead
-        ) {
-
-            zombie.deathTimer -=
-                dt;
+        if (!zombie.alive) {
 
             continue;
 
         }
 
+        zombie.animation +=
+            dt * 5;
 
         zombie.hitFlash =
             Math.max(
@@ -3863,18 +2804,12 @@ function updateZombies(
                 dt
             );
 
-
-        zombie.attackTimer -=
-            dt;
-
-
-        zombie.attackAnimation =
+        zombie.attackCooldown =
             Math.max(
                 0,
-                zombie.attackAnimation -
+                zombie.attackCooldown -
                 dt
             );
-
 
         const dx =
             player.x -
@@ -3890,48 +2825,9 @@ function updateZombies(
                 dy
             );
 
-
-        const canSeePlayer =
-            distance < 9 &&
-            hasLineOfSight(
-                zombie.x,
-                zombie.y,
-                player.x,
-                player.y
-            );
-
-
-        if (
-            canSeePlayer
-        ) {
-
-            zombie.alert =
-                true;
-
-        }
-
-
-        if (
-            zombie.alert
-        ) {
-
-            updateZombieChase(
-                zombie,
-                dt,
-                dx,
-                dy,
-                distance
-            );
-
-        } else {
-
-            updateZombieWander(
-                zombie,
-                dt
-            );
-
-        }
-
+        /*
+         * Attack
+         */
 
         if (
             distance <=
@@ -3939,16 +2835,80 @@ function updateZombies(
         ) {
 
             if (
-                zombie.attackTimer <=
+                zombie.attackCooldown <=
                 0
             ) {
 
-                zombieAttack(
-                    zombie
+                damagePlayer(
+                    zombie.damage
                 );
 
-                zombie.attackTimer =
-                    zombie.attackCooldown;
+                zombie.attackCooldown =
+                    .85;
+
+            }
+
+            continue;
+
+        }
+
+        /*
+         * Chase
+         */
+
+        if (
+            distance < 16
+        ) {
+
+            const dirX =
+                dx /
+                Math.max(
+                    distance,
+                    .001
+                );
+
+            const dirY =
+                dy /
+                Math.max(
+                    distance,
+                    .001
+                );
+
+            const speed =
+                zombie.speed *
+                dt;
+
+            const nextX =
+                zombie.x +
+                dirX * speed;
+
+            const nextY =
+                zombie.y +
+                dirY * speed;
+
+            if (
+                zombieCanMoveTo(
+                    zombie,
+                    nextX,
+                    zombie.y
+                )
+            ) {
+
+                zombie.x =
+                    nextX;
+
+            }
+
+            if (
+                zombieCanMoveTo(
+                    zombie,
+                    zombie.x,
+                    nextY
+                )
+            ) {
+
+                zombie.y =
+                    nextY;
 
             }
 
@@ -3956,255 +2916,23 @@ function updateZombies(
 
     }
 
-
-    cleanupDeadZombies();
-
 }
 
 
 /* =========================================================
-   ZOMBIE CHASE
+   DAMAGE PLAYER
 ========================================================= */
 
-function updateZombieChase(
-    zombie,
-    dt,
-    dx,
-    dy,
-    distance
+function damagePlayer(
+    damage
 ) {
 
-    if (
-        distance <=
-        zombie.attackRange
-    ) {
-
+    if (gameOver) {
         return;
-
     }
-
-
-    if (
-        distance <=
-        0.001
-    ) {
-
-        return;
-
-    }
-
-
-    const nx =
-        dx /
-        distance;
-
-    const ny =
-        dy /
-        distance;
-
-
-    const speed =
-        zombie.speed *
-        dt;
-
-
-    const nextX =
-        zombie.x +
-        nx *
-        speed;
-
-    const nextY =
-        zombie.y +
-        ny *
-        speed;
-
-
-    if (
-        canMoveTo(
-            nextX,
-            zombie.y,
-            zombie.radius
-        )
-    ) {
-
-        zombie.x =
-            nextX;
-
-    } else {
-
-        const sideX =
-            -ny;
-
-        if (
-            canMoveTo(
-                zombie.x +
-                sideX *
-                speed,
-                zombie.y,
-                zombie.radius
-            )
-        ) {
-
-            zombie.x +=
-                sideX *
-                speed;
-
-        }
-
-    }
-
-
-    if (
-        canMoveTo(
-            zombie.x,
-            nextY,
-            zombie.radius
-        )
-    ) {
-
-        zombie.y =
-            nextY;
-
-    } else {
-
-        const sideY =
-            nx;
-
-        if (
-            canMoveTo(
-                zombie.x,
-                zombie.y +
-                sideY *
-                speed,
-                zombie.radius
-            )
-        ) {
-
-            zombie.y +=
-                sideY *
-                speed;
-
-        }
-
-    }
-
-}
-
-
-/* =========================================================
-   ZOMBIE WANDER
-========================================================= */
-
-function updateZombieWander(
-    zombie,
-    dt
-) {
-
-    zombie.wanderTimer -=
-        dt;
-
-
-    if (
-        zombie.wanderTimer <=
-        0
-    ) {
-
-        zombie.wanderTimer =
-            1 +
-            Math.random() * 3;
-
-        zombie.wanderAngle =
-            Math.random() *
-            Math.PI * 2;
-
-    }
-
-
-    const speed =
-        zombie.speed *
-        .28 *
-        dt;
-
-
-    const dx =
-        Math.cos(
-            zombie.wanderAngle
-        ) *
-        speed;
-
-
-    const dy =
-        Math.sin(
-            zombie.wanderAngle
-        ) *
-        speed;
-
-
-    if (
-        canMoveTo(
-            zombie.x + dx,
-            zombie.y,
-            zombie.radius
-        )
-    ) {
-
-        zombie.x +=
-            dx;
-
-    }
-
-
-    if (
-        canMoveTo(
-            zombie.x,
-            zombie.y + dy,
-            zombie.radius
-        )
-    ) {
-
-        zombie.y +=
-            dy;
-
-    }
-
-
-    const distance =
-        Math.hypot(
-            zombie.x -
-            player.x,
-            zombie.y -
-            player.y
-        );
-
-
-    if (
-        distance <
-        4
-    ) {
-
-        zombie.alert =
-            true;
-
-    }
-
-}
-
-
-/* =========================================================
-   ZOMBIE ATTACK
-========================================================= */
-
-function zombieAttack(
-    zombie
-) {
-
-    zombie.attackAnimation =
-        .35;
-
 
     player.health -=
-        zombie.damage;
-
+        damage;
 
     player.health =
         Math.max(
@@ -4212,31 +2940,30 @@ function zombieAttack(
             player.health
         );
 
+    damageFlash =
+        .75;
 
-    player.damageFlash =
-        .25;
+    shakeAmount =
+        10;
 
-
-    playZombieAttackSound();
-
+    playPlayerDamage();
 
     showMessage(
         "YOU ARE HURT",
         "-" +
-        zombie.damage +
+        Math.ceil(
+            damage
+        ) +
         " HEALTH"
     );
 
-
     updateHUD();
 
-
     if (
-        player.health <=
-        0
+        player.health <= 0
     ) {
 
-        loseGame();
+        playerDeath();
 
     }
 
@@ -4244,34 +2971,39 @@ function zombieAttack(
 
 
 /* =========================================================
-   CLEANUP ZOMBIES
+   PLAYER DEATH
 ========================================================= */
 
-function cleanupDeadZombies() {
+function playerDeath() {
 
-    for (
-        let i =
-            zombies.length - 1;
-        i >= 0;
-        i--
+    gameOver = true;
+
+    paused = false;
+
+    shooting = false;
+
+    if (
+        document.pointerLockElement ===
+        canvas
     ) {
 
-        const zombie =
-            zombies[i];
+        try {
 
+            document.exitPointerLock();
 
-        if (
-            zombie.dead &&
-            zombie.deathTimer <=
-            0
-        ) {
+        } catch (error) {}
 
-            zombies.splice(
-                i,
-                1
-            );
+    }
 
-        }
+    showMessage(
+        "YOU DIED",
+        "The room kept you."
+    );
+
+    if (objective) {
+
+        objective.textContent =
+            "You did not escape.";
 
     }
 
@@ -4279,59 +3011,271 @@ function cleanupDeadZombies() {
 
 
 /* =========================================================
-   SPAWN SYSTEM
+   FLASHLIGHT
 ========================================================= */
 
-function updateZombieSpawning(
-    dt
-) {
+function toggleFlashlight() {
 
     if (
-        !gameStarted ||
-        paused ||
-        gameOver ||
-        victory
+        battery <= 0
     ) {
+
+        flashlightOn = false;
+
+        showMessage(
+            "The flashlight is dead.",
+            "Find another way."
+        );
+
+        updateBatteryUI();
 
         return;
 
     }
 
+    flashlightOn =
+        !flashlightOn;
+
+    playFlashlightClick();
+
+    showMessage(
+        flashlightOn
+            ? "Flashlight on."
+            : "Flashlight off.",
+        flashlightOn
+            ? "The darkness retreats."
+            : "The darkness returns."
+    );
+
+}
+
+
+/* =========================================================
+   BATTERY
+========================================================= */
+
+function updateBattery(dt) {
+
+    if (!flashlightOn) {
+
+        return;
+
+    }
+
+    battery -=
+        dt *
+        .1111;
+
+    battery =
+        Math.max(
+            0,
+            battery
+        );
 
     if (
-        elapsed > 20 &&
-        elapsed < 21
+        battery <= 0
     ) {
 
-        spawnWave(
-            2
+        flashlightOn =
+            false;
+
+        showMessage(
+            "The flashlight dies.",
+            "You are not alone."
         );
 
     }
 
+    updateBatteryUI();
+
+}
+
+
+/* =========================================================
+   BATTERY UI
+========================================================= */
+
+function updateBatteryUI() {
+
+    if (!batteryFill) {
+
+        return;
+
+    }
+
+    const value =
+        Math.max(
+            0,
+            Math.min(
+                100,
+                battery
+            )
+        );
+
+    batteryFill.style.width =
+        value + "%";
 
     if (
-        elapsed > 40 &&
-        elapsed < 41
+        value < 20
     ) {
 
-        spawnWave(
-            3
+        document.body.classList.add(
+            "lowBattery"
+        );
+
+    } else {
+
+        document.body.classList.remove(
+            "lowBattery"
         );
 
     }
 
+}
 
-    if (
-        elapsed > 65 &&
-        elapsed < 66
+
+/* =========================================================
+   ANGLE
+========================================================= */
+
+function normalizeAngle(
+    angle
+) {
+
+    while (
+        angle > Math.PI
     ) {
 
-        spawnWave(
-            3
-        );
+        angle -=
+            Math.PI * 2;
 
     }
+
+    while (
+        angle < -Math.PI
+    ) {
+
+        angle +=
+            Math.PI * 2;
+
+    }
+
+    return angle;
+
+}
+
+
+/* =========================================================
+   MESSAGE
+========================================================= */
+
+function showMessage(
+    mainText,
+    subText
+) {
+
+    if (!message) {
+
+        return;
+
+    }
+
+    clearTimeout(
+        messageTimer
+    );
+
+    message.innerHTML =
+        mainText +
+        (
+            subText
+                ? "<span>" +
+                  subText +
+                  "</span>"
+                : ""
+        );
+
+    message.classList.add(
+        "visible"
+    );
+
+    messageTimer =
+        setTimeout(
+            function() {
+
+                message.classList.remove(
+                    "visible"
+                );
+
+            },
+            2800
+        );
+
+}
+
+
+function hideMessage() {
+
+    if (!message) {
+
+        return;
+
+    }
+
+    clearTimeout(
+        messageTimer
+    );
+
+    message.classList.remove(
+        "visible"
+    );
+
+}
+
+
+function hideInteraction() {
+
+    if (!interaction) {
+
+        return;
+
+    }
+
+    interaction.classList.remove(
+        "visible"
+    );
+
+}
+
+
+/* =========================================================
+   HIT MARKER
+========================================================= */
+
+function showHitMarker() {
+
+    const marker =
+        document.getElementById(
+            "hitMarker"
+        );
+
+    if (!marker) {
+        return;
+    }
+
+    marker.classList.add(
+        "active"
+    );
+
+    setTimeout(
+        function() {
+
+            marker.classList.remove(
+                "active"
+            );
+
+        },
+        100
+    );
 
 }
 
@@ -4350,17 +3294,13 @@ function castRay(
     const cos =
         Math.cos(angle);
 
-
-    let distance =
-        0;
-
+    let distance = 0;
 
     const maxDistance =
         30;
 
     const step =
-        .025;
-
+        .018;
 
     while (
         distance <
@@ -4370,25 +3310,21 @@ function castRay(
         distance +=
             step;
 
-
         const x =
             player.x +
             cos *
             distance;
-
 
         const y =
             player.y +
             sin *
             distance;
 
-
         const mapX =
             Math.floor(x);
 
         const mapY =
             Math.floor(y);
-
 
         if (
             mapX < 0 ||
@@ -4400,18 +3336,16 @@ function castRay(
             return {
 
                 distance,
-
-                type:
-                    "wall"
+                type: "wall",
+                mapX,
+                mapY
 
             };
 
         }
 
-
         const tile =
             MAP[mapY][mapX];
-
 
         if (
             tile === "#"
@@ -4420,14 +3354,13 @@ function castRay(
             return {
 
                 distance,
-
-                type:
-                    "wall"
+                type: "wall",
+                mapX,
+                mapY
 
             };
 
         }
-
 
         if (
             tile === "D" &&
@@ -4437,16 +3370,15 @@ function castRay(
             return {
 
                 distance,
-
-                type:
-                    "door"
+                type: "door",
+                mapX,
+                mapY
 
             };
 
         }
 
     }
-
 
     return {
 
@@ -4473,13 +3405,11 @@ function render() {
 
     }
 
-
     const width =
         window.innerWidth;
 
     const height =
         window.innerHeight;
-
 
     ctx.clearRect(
         0,
@@ -4488,41 +3418,56 @@ function render() {
         height
     );
 
+    ctx.save();
+
+    if (
+        shakeAmount > 0
+    ) {
+
+        ctx.translate(
+            (
+                Math.random() *
+                2 -
+                1
+            ) *
+            shakeAmount,
+
+            (
+                Math.random() *
+                2 -
+                1
+            ) *
+            shakeAmount
+        );
+
+    }
 
     drawBackground(
         width,
         height
     );
 
-
     drawWorld(
         width,
         height
     );
-
 
     drawZombies(
         width,
         height
     );
 
-
     drawWeapon(
         width,
         height
     );
-
 
     drawApparition(
         width,
         height
     );
 
-
-    drawDamageEffect(
-        width,
-        height
-    );
+    ctx.restore();
 
 }
 
@@ -4544,44 +3489,27 @@ function drawBackground(
             height
         );
 
-
-    if (
+    gradient.addColorStop(
+        0,
         flashlightOn
-    ) {
+            ? "#08090b"
+            : "#010101"
+    );
 
-        gradient.addColorStop(
-            0,
-            "#060606"
-        );
+    gradient.addColorStop(
+        .45,
+        flashlightOn
+            ? "#151619"
+            : "#030303"
+    );
 
-        gradient.addColorStop(
-            .5,
-            "#111111"
-        );
-
-        gradient.addColorStop(
-            1,
-            "#020202"
-        );
-
-    } else {
-
-        gradient.addColorStop(
-            0,
-            "#010101"
-        );
-
-        gradient.addColorStop(
-            1,
-            "#000000"
-        );
-
-    }
-
+    gradient.addColorStop(
+        1,
+        "#020202"
+    );
 
     ctx.fillStyle =
         gradient;
-
 
     ctx.fillRect(
         0,
@@ -4594,7 +3522,7 @@ function drawBackground(
 
 
 /* =========================================================
-   WORLD
+   WORLD RENDER
 ========================================================= */
 
 function drawWorld(
@@ -4604,20 +3532,18 @@ function drawWorld(
 
     const columns =
         Math.min(
-            900,
+            1000,
             Math.max(
-                320,
+                400,
                 Math.floor(
-                    width / 1.5
+                    width / 1.35
                 )
             )
         );
 
-
     const columnWidth =
         width /
         columns;
-
 
     for (
         let column = 0;
@@ -4629,19 +3555,16 @@ function drawWorld(
             column /
             columns;
 
-
         const rayAngle =
             player.angle -
             FOV / 2 +
             percent *
             FOV;
 
-
         const ray =
             castRay(
                 rayAngle
             );
-
 
         const correctedDistance =
             ray.distance *
@@ -4650,13 +3573,11 @@ function drawWorld(
                 player.angle
             );
 
-
         const safeDistance =
             Math.max(
                 .05,
                 correctedDistance
             );
-
 
         const wallHeight =
             Math.min(
@@ -4665,22 +3586,22 @@ function drawWorld(
                 safeDistance
             );
 
-
         const top =
             height / 2 -
             wallHeight / 2;
 
-
-        ctx.fillStyle =
+        const shade =
             getWallShade(
                 safeDistance,
                 ray.type
             );
 
+        ctx.fillStyle =
+            shade;
 
         ctx.fillRect(
             column *
-            columnWidth,
+                columnWidth,
             top,
             columnWidth + 1,
             wallHeight
@@ -4701,54 +3622,44 @@ function getWallShade(
 ) {
 
     let light =
-        105 /
+        115 /
         Math.max(
             1,
             distance *
             distance
         );
 
+    if (flashlightOn) {
 
-    if (
-        flashlightOn
-    ) {
-
-        light *=
-            3.2;
+        light *= 4;
 
     } else {
 
-        light *=
-            .25;
+        light *= .28;
 
     }
-
 
     light =
         Math.max(
             3,
             Math.min(
-                125,
+                140,
                 light
             )
         );
-
 
     if (
         type === "door"
     ) {
 
-        light *=
-            .55;
+        light *= .55;
 
     }
-
 
     const value =
         Math.floor(
             light
         );
-
 
     return (
         "rgb(" +
@@ -4764,7 +3675,7 @@ function getWallShade(
 
 
 /* =========================================================
-   ZOMBIE RENDER
+   ZOMBIE SPRITES
 ========================================================= */
 
 function drawZombies(
@@ -4772,24 +3683,17 @@ function drawZombies(
     height
 ) {
 
-    const visible =
-        [];
-
+    const visible = [];
 
     for (
         const zombie of zombies
     ) {
 
-        if (
-            zombie.dead &&
-            zombie.deathTimer <=
-            0
-        ) {
+        if (!zombie.alive) {
 
             continue;
 
         }
-
 
         const dx =
             zombie.x -
@@ -4799,15 +3703,13 @@ function drawZombies(
             zombie.y -
             player.y;
 
-
         const distance =
             Math.hypot(
                 dx,
                 dy
             );
 
-
-        let angle =
+        const angle =
             normalizeAngle(
                 Math.atan2(
                     dy,
@@ -4815,7 +3717,6 @@ function drawZombies(
                 ) -
                 player.angle
             );
-
 
         if (
             Math.abs(angle) >
@@ -4827,83 +3728,35 @@ function drawZombies(
 
         }
 
-
         if (
-            !hasLineOfSight(
-                player.x,
-                player.y,
-                zombie.x,
-                zombie.y
-            )
+            distance >
+            25
         ) {
 
             continue;
 
         }
-
-
-        const corrected =
-            distance *
-            Math.cos(angle);
-
-
-        if (
-            corrected <=
-            .05
-        ) {
-
-            continue;
-
-        }
-
-
-        const screenX =
-            width / 2 +
-            (
-                angle /
-                (FOV / 2)
-            ) *
-            (
-                width / 2
-            );
-
-
-        const size =
-            Math.min(
-                height * .9,
-                (
-                    height /
-                    corrected
-                ) *
-                .72 *
-                zombie.scale
-            );
-
 
         visible.push({
 
             zombie,
-
             distance,
-
-            screenX,
-
-            size
+            angle
 
         });
 
     }
 
-
     visible.sort(
-        (
-            a,
-            b
-        ) =>
-            b.distance -
-            a.distance
-    );
+        function(a, b) {
 
+            return (
+                b.distance -
+                a.distance
+            );
+
+        }
+    );
 
     for (
         const item of visible
@@ -4911,9 +3764,10 @@ function drawZombies(
 
         drawZombieSprite(
             item.zombie,
-            item.screenX,
-            height / 2,
-            item.size
+            item.distance,
+            item.angle,
+            width,
+            height
         );
 
     }
@@ -4927,122 +3781,273 @@ function drawZombies(
 
 function drawZombieSprite(
     zombie,
-    x,
-    centerY,
-    size
+    distance,
+    relativeAngle,
+    width,
+    height
 ) {
 
-    const bodyHeight =
-        size;
-
-    const bodyWidth =
-        size *
-        .38;
-
-
-    const top =
-        centerY -
-        bodyHeight *
-        .48;
-
-
-    const healthPercent =
-        Math.max(
-            0,
-            zombie.health /
-            zombie.maxHealth
+    const corrected =
+        distance *
+        Math.cos(
+            relativeAngle
         );
-
-
-    /* -----------------------------------------
-       HEALTH BAR
-    ----------------------------------------- */
-
-    const barWidth =
-        Math.max(
-            30,
-            bodyWidth
-        );
-
-
-    ctx.fillStyle =
-        "rgba(0,0,0,.8)";
-
-
-    ctx.fillRect(
-        x -
-        barWidth / 2,
-        top -
-        14,
-        barWidth,
-        6
-    );
-
-
-    ctx.fillStyle =
-        "#ddd";
-
-
-    ctx.fillRect(
-        x -
-        barWidth / 2,
-        top -
-        14,
-        barWidth *
-        healthPercent,
-        6
-    );
-
-
-    /* -----------------------------------------
-       DEATH
-    ----------------------------------------- */
-
-    let deathScale =
-        1;
-
 
     if (
-        zombie.dead
+        corrected <= .1
     ) {
 
-        deathScale =
-            Math.max(
-                0,
-                zombie.deathTimer /
-                .8
-            );
+        return;
 
     }
 
+    const screenX =
+        width / 2 +
+        (
+            relativeAngle /
+            (FOV / 2)
+        ) *
+        (
+            width / 2
+        );
 
-    const bodyTop =
-        top +
-        bodyHeight *
-        .2;
+    const spriteHeight =
+        Math.min(
+            height * 1.5,
+            height /
+            corrected *
+            .9
+        );
 
+    const spriteWidth =
+        spriteHeight *
+        .42;
 
-    /* -----------------------------------------
-       HEAD
-    ----------------------------------------- */
+    const bottom =
+        height / 2 +
+        spriteHeight / 2;
 
-    const headRadius =
-        size *
-        .13;
+    const left =
+        screenX -
+        spriteWidth / 2;
 
+    /*
+     * Simple depth check.
+     */
+
+    const centerRay =
+        castRay(
+            player.angle +
+            relativeAngle
+        );
+
+    if (
+        centerRay.distance <
+        distance -
+        .15
+    ) {
+
+        return;
+
+    }
+
+    ctx.save();
+
+    const flash =
+        zombie.hitFlash >
+        0;
+
+    /*
+     * Shadow
+     */
 
     ctx.fillStyle =
-        zombie.hitFlash > 0
-            ? "#ffffff"
-            : "#9a9a9a";
+        "rgba(0,0,0,.5)";
 
+    ctx.beginPath();
+
+    ctx.ellipse(
+        screenX,
+        bottom,
+        spriteWidth * .55,
+        spriteHeight * .08,
+        0,
+        0,
+        Math.PI * 2
+    );
+
+    ctx.fill();
+
+
+    /*
+     * Legs
+     */
+
+    const walk =
+        Math.sin(
+            zombie.animation
+        ) *
+        spriteWidth *
+        .12;
+
+    ctx.strokeStyle =
+        flash
+            ? "#ffffff"
+            : "#111";
+
+    ctx.lineWidth =
+        spriteWidth *
+        .14;
+
+    ctx.lineCap =
+        "round";
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+        screenX -
+        spriteWidth * .12,
+        bottom -
+        spriteHeight * .28
+    );
+
+    ctx.lineTo(
+        screenX -
+        spriteWidth * .18 -
+        walk,
+        bottom
+    );
+
+    ctx.moveTo(
+        screenX +
+        spriteWidth * .12,
+        bottom -
+        spriteHeight * .28
+    );
+
+    ctx.lineTo(
+        screenX +
+        spriteWidth * .18 +
+        walk,
+        bottom
+    );
+
+    ctx.stroke();
+
+
+    /*
+     * Body
+     */
+
+    const bodyGradient =
+        ctx.createLinearGradient(
+            left,
+            bottom -
+            spriteHeight * .75,
+            left +
+            spriteWidth,
+            bottom
+        );
+
+    bodyGradient.addColorStop(
+        0,
+        flash
+            ? "#ffffff"
+            : "#3d3d3d"
+    );
+
+    bodyGradient.addColorStop(
+        .55,
+        flash
+            ? "#bbbbbb"
+            : "#171717"
+    );
+
+    bodyGradient.addColorStop(
+        1,
+        "#050505"
+    );
+
+    ctx.fillStyle =
+        bodyGradient;
+
+    ctx.beginPath();
+
+    ctx.roundRect(
+        left +
+        spriteWidth * .17,
+
+        bottom -
+        spriteHeight * .63,
+
+        spriteWidth *
+        .66,
+
+        spriteHeight *
+        .48,
+
+        spriteWidth *
+        .1
+    );
+
+    ctx.fill();
+
+
+    /*
+     * Head
+     */
+
+    const headX =
+        screenX;
+
+    const headY =
+        bottom -
+        spriteHeight *
+        .78;
+
+    const headRadius =
+        spriteWidth *
+        .25;
+
+    const headGradient =
+        ctx.createRadialGradient(
+            headX -
+            headRadius * .3,
+            headY -
+            headRadius * .3,
+            1,
+            headX,
+            headY,
+            headRadius
+        );
+
+    headGradient.addColorStop(
+        0,
+        flash
+            ? "#ffffff"
+            : "#777"
+    );
+
+    headGradient.addColorStop(
+        .65,
+        flash
+            ? "#aaa"
+            : "#292929"
+    );
+
+    headGradient.addColorStop(
+        1,
+        "#050505"
+    );
+
+    ctx.fillStyle =
+        headGradient;
 
     ctx.beginPath();
 
     ctx.arc(
-        x,
-        bodyTop +
-        headRadius,
+        headX,
+        headY,
         headRadius,
         0,
         Math.PI * 2
@@ -5051,154 +4056,161 @@ function drawZombieSprite(
     ctx.fill();
 
 
-    /* -----------------------------------------
-       BODY
-    ----------------------------------------- */
+    /*
+     * Eyes
+     */
+
+    const eyeY =
+        headY -
+        headRadius *
+        .05;
 
     ctx.fillStyle =
-        zombie.type === "brute"
-            ? "#666"
-            : "#777";
-
-
-    ctx.fillRect(
-        x -
-        bodyWidth / 2,
-        bodyTop +
-        headRadius * 1.6,
-        bodyWidth,
-        bodyHeight *
-        .48 *
-        deathScale
-    );
-
-
-    /* -----------------------------------------
-       ARMS
-    ----------------------------------------- */
-
-    const armY =
-        bodyTop +
-        bodyHeight *
-        .42;
-
-
-    ctx.strokeStyle =
-        "#777";
-
-
-    ctx.lineWidth =
-        Math.max(
-            2,
-            size * .035
-        );
-
+        flash
+            ? "#ffffff"
+            : "#a90000";
 
     ctx.beginPath();
 
+    ctx.arc(
+        headX -
+        headRadius *
+        .35,
+        eyeY,
+        headRadius *
+        .10,
+        0,
+        Math.PI * 2
+    );
+
+    ctx.arc(
+        headX +
+        headRadius *
+        .35,
+        eyeY,
+        headRadius *
+        .10,
+        0,
+        Math.PI * 2
+    );
+
+    ctx.fill();
+
+
+    /*
+     * Arms
+     */
+
+    ctx.strokeStyle =
+        flash
+            ? "#eee"
+            : "#181818";
+
+    ctx.lineWidth =
+        spriteWidth *
+        .12;
+
+    ctx.beginPath();
 
     ctx.moveTo(
-        x -
-        bodyWidth / 2,
-        armY
+        screenX -
+        spriteWidth * .27,
+        bottom -
+        spriteHeight * .52
     );
-
 
     ctx.lineTo(
-        x -
-        bodyWidth *
-        .9,
-        armY +
-        bodyHeight *
-        .13
+        screenX -
+        spriteWidth * .48,
+        bottom -
+        spriteHeight * .25
     );
-
 
     ctx.moveTo(
-        x +
-        bodyWidth / 2,
-        armY
+        screenX +
+        spriteWidth * .27,
+        bottom -
+        spriteHeight * .52
     );
-
 
     ctx.lineTo(
-        x +
-        bodyWidth *
-        .9,
-        armY +
-        bodyHeight *
-        .13
+        screenX +
+        spriteWidth * .48,
+        bottom -
+        spriteHeight * .25
     );
-
 
     ctx.stroke();
 
 
-    /* -----------------------------------------
-       EYES
-    ----------------------------------------- */
+    /*
+     * HEALTH BAR
+     */
+
+    const barWidth =
+        spriteWidth *
+        1.25;
+
+    const barHeight =
+        Math.max(
+            4,
+            spriteHeight *
+            .035
+        );
+
+    const barX =
+        screenX -
+        barWidth / 2;
+
+    const barY =
+        headY -
+        headRadius *
+        1.8;
 
     ctx.fillStyle =
-        "#eee";
+        "rgba(0,0,0,.75)";
 
+    ctx.fillRect(
+        barX,
+        barY,
+        barWidth,
+        barHeight
+    );
 
-    const eyeSize =
+    ctx.fillStyle =
+        "#b00000";
+
+    ctx.fillRect(
+        barX,
+        barY,
+        barWidth *
         Math.max(
-            1.5,
-            size * .025
-        );
-
-
-    ctx.fillRect(
-        x -
-        headRadius *
-        .45,
-        bodyTop +
-        headRadius *
-        .8,
-        eyeSize,
-        eyeSize
+            0,
+            zombie.health /
+            zombie.maxHealth
+        ),
+        barHeight
     );
 
+    ctx.strokeStyle =
+        "rgba(255,255,255,.35)";
 
-    ctx.fillRect(
-        x +
-        headRadius *
-        .25,
-        bodyTop +
-        headRadius *
-        .8,
-        eyeSize,
-        eyeSize
+    ctx.lineWidth = 1;
+
+    ctx.strokeRect(
+        barX,
+        barY,
+        barWidth,
+        barHeight
     );
 
-
-    /* -----------------------------------------
-       DEATH DARKENING
-    ----------------------------------------- */
-
-    if (
-        zombie.dead
-    ) {
-
-        ctx.fillStyle =
-            "rgba(0,0,0,.45)";
-
-        ctx.fillRect(
-            x -
-            bodyWidth,
-            top,
-            bodyWidth * 2,
-            bodyHeight
-        );
-
-    }
+    ctx.restore();
 
 }
 
 
 /* =========================================================
-   WEAPON RENDER
+   WEAPON
 ========================================================= */
 
 function drawWeapon(
@@ -5208,99 +4220,72 @@ function drawWeapon(
 
     if (
         !gameStarted ||
-        gameOver ||
-        victory
+        gameOver
     ) {
 
         return;
 
     }
 
-
-    weaponRecoil *=
-        .88;
-
-
-    const recoil =
-        weaponRecoil;
-
-
-    const baseY =
-        height *
-        .91 +
-        recoil *
-        height;
-
+    const weapon =
+        currentWeapon;
 
     const centerX =
         width / 2;
 
+    const baseY =
+        height;
+
+    const recoilOffset =
+        recoil * 3;
 
     ctx.save();
 
-
     ctx.translate(
-        centerX,
-        baseY
+        0,
+        recoilOffset
     );
 
-
     if (
-        aiming
+        weapon === "pistol"
     ) {
 
-        ctx.scale(
-            .72,
-            .72
+        drawPistol(
+            centerX,
+            baseY,
+            width,
+            height
         );
 
-    }
+    } else {
 
-
-    if (
-        currentWeapon.id ===
-        "pistol"
-    ) {
-
-        drawPistol();
-
-    }
-
-
-    if (
-        currentWeapon.id ===
-        "shotgun"
-    ) {
-
-        drawShotgun();
-
-    }
-
-
-    if (
-        currentWeapon.id ===
-        "rifle"
-    ) {
-
-        drawRifle();
-
-    }
-
-
-    ctx.restore();
-
-
-    if (
-        muzzleFlashTimer >
-        0
-    ) {
-
-        drawMuzzleFlash(
+        drawShotgun(
+            centerX,
+            baseY,
             width,
             height
         );
 
     }
+
+    /*
+     * Muzzle flash
+     */
+
+    if (
+        muzzleFlashTimer > 0
+    ) {
+
+        drawMuzzleFlash(
+            centerX,
+            baseY,
+            width,
+            height
+        );
+
+    }
+
+    ctx.restore();
 
 }
 
@@ -5309,62 +4294,201 @@ function drawWeapon(
    PISTOL
 ========================================================= */
 
-function drawPistol() {
+function drawPistol(
+    cx,
+    baseY,
+    width,
+    height
+) {
+
+    const scale =
+        Math.min(
+            1.2,
+            width / 1300
+        );
+
+    const gunW =
+        180 * scale;
+
+    const gunH =
+        230 * scale;
+
+    const x =
+        cx -
+        gunW / 2;
+
+    const y =
+        baseY -
+        gunH *
+        .65;
+
+    /*
+     * Hand
+     */
 
     ctx.fillStyle =
-        "#171717";
+        "#7a4e3d";
 
+    ctx.beginPath();
 
-    ctx.fillRect(
-        -34,
-        -95,
-        68,
-        105
+    ctx.ellipse(
+        x +
+        gunW * .25,
+        y +
+        gunH * .72,
+        gunW * .17,
+        gunH * .17,
+        -.2,
+        0,
+        Math.PI * 2
     );
 
+    ctx.fill();
+
+
+    /*
+     * Grip
+     */
+
+    const gripGradient =
+        ctx.createLinearGradient(
+            x,
+            y,
+            x + gunW,
+            y
+        );
+
+    gripGradient.addColorStop(
+        0,
+        "#070707"
+    );
+
+    gripGradient.addColorStop(
+        .5,
+        "#282828"
+    );
+
+    gripGradient.addColorStop(
+        1,
+        "#050505"
+    );
 
     ctx.fillStyle =
-        "#343434";
+        gripGradient;
 
+    ctx.beginPath();
 
-    ctx.fillRect(
-        -43,
-        -110,
-        86,
-        25
+    ctx.roundRect(
+        x +
+        gunW * .36,
+        y +
+        gunH * .42,
+        gunW * .25,
+        gunH * .52,
+        8
     );
 
+    ctx.fill();
+
+
+    /*
+     * Main body
+     */
+
+    ctx.fillStyle =
+        "#292929";
+
+    ctx.beginPath();
+
+    ctx.roundRect(
+        x +
+        gunW * .2,
+        y +
+        gunH * .22,
+        gunW * .6,
+        gunH * .28,
+        8
+    );
+
+    ctx.fill();
+
+
+    /*
+     * Barrel
+     */
 
     ctx.fillStyle =
         "#111";
 
-
     ctx.fillRect(
-        -25,
-        -85,
-        50,
-        16
+        x +
+        gunW * .43,
+        y,
+        gunW * .18,
+        gunH * .27
     );
 
 
-    ctx.fillRect(
-        -22,
-        0,
-        44,
-        75
-    );
-
+    /*
+     * Front sight
+     */
 
     ctx.fillStyle =
-        "#555";
-
+        "#aaa";
 
     ctx.fillRect(
-        -19,
-        15,
-        38,
-        52
+        x +
+        gunW * .48,
+        y -
+        gunH * .025,
+        gunW * .05,
+        gunH * .05
     );
+
+
+    /*
+     * Slide
+     */
+
+    ctx.strokeStyle =
+        "#666";
+
+    ctx.lineWidth =
+        2;
+
+    ctx.strokeRect(
+        x +
+        gunW * .25,
+        y +
+        gunH * .24,
+        gunW * .5,
+        gunH * .12
+    );
+
+
+    /*
+     * Trigger
+     */
+
+    ctx.strokeStyle =
+        "#888";
+
+    ctx.lineWidth =
+        3;
+
+    ctx.beginPath();
+
+    ctx.arc(
+        x +
+        gunW * .49,
+        y +
+        gunH * .48,
+        gunW * .06,
+        0,
+        Math.PI
+    );
+
+    ctx.stroke();
 
 }
 
@@ -5373,117 +4497,197 @@ function drawPistol() {
    SHOTGUN
 ========================================================= */
 
-function drawShotgun() {
+function drawShotgun(
+    cx,
+    baseY,
+    width,
+    height
+) {
+
+    const scale =
+        Math.min(
+            1.2,
+            width / 1300
+        );
+
+    const gunW =
+        340 * scale;
+
+    const gunH =
+        180 * scale;
+
+    const x =
+        cx -
+        gunW / 2;
+
+    const y =
+        baseY -
+        gunH *
+        .55;
+
+    /*
+     * Hands
+     */
 
     ctx.fillStyle =
-        "#222";
+        "#79503f";
 
+    ctx.beginPath();
 
-    ctx.fillRect(
-        -24,
-        -150,
-        48,
-        160
-    );
-
-
-    ctx.fillStyle =
-        "#555";
-
-
-    ctx.fillRect(
-        -30,
-        -165,
-        60,
-        25
-    );
-
-
-    ctx.fillStyle =
-        "#111";
-
-
-    ctx.fillRect(
-        -18,
+    ctx.ellipse(
+        x +
+        gunW * .25,
+        y +
+        gunH * .68,
+        gunW * .14,
+        gunH * .14,
+        -.2,
         0,
-        36,
-        95
+        Math.PI * 2
     );
 
-
-    ctx.fillStyle =
-        "#777";
-
-
-    ctx.fillRect(
-        -55,
-        -45,
-        110,
-        15
-    );
-
-}
-
-
-/* =========================================================
-   RIFLE
-========================================================= */
-
-function drawRifle() {
-
-    ctx.fillStyle =
-        "#191919";
-
-
-    ctx.fillRect(
-        -28,
-        -165,
-        56,
-        170
-    );
-
-
-    ctx.fillStyle =
-        "#555";
-
-
-    ctx.fillRect(
-        -80,
-        -130,
-        160,
-        22
-    );
-
-
-    ctx.fillStyle =
-        "#111";
-
-
-    ctx.fillRect(
-        -20,
+    ctx.ellipse(
+        x +
+        gunW * .72,
+        y +
+        gunH * .58,
+        gunW * .14,
+        gunH * .14,
+        .2,
         0,
-        40,
-        95
+        Math.PI * 2
     );
 
+    ctx.fill();
+
+
+    /*
+     * Stock
+     */
 
     ctx.fillStyle =
-        "#666";
+        "#2b1b12";
 
+    ctx.beginPath();
+
+    ctx.moveTo(
+        x,
+        y +
+        gunH * .36
+    );
+
+    ctx.lineTo(
+        x +
+        gunW * .3,
+        y +
+        gunH * .28
+    );
+
+    ctx.lineTo(
+        x +
+        gunW * .36,
+        y +
+        gunH * .55
+    );
+
+    ctx.lineTo(
+        x +
+        gunW * .04,
+        y +
+        gunH * .66
+    );
+
+    ctx.closePath();
+
+    ctx.fill();
+
+
+    /*
+     * Receiver
+     */
+
+    ctx.fillStyle =
+        "#242424";
 
     ctx.fillRect(
-        -62,
-        -108,
-        124,
-        12
+        x +
+        gunW * .28,
+        y +
+        gunH * .28,
+        gunW * .34,
+        gunH * .25
     );
 
 
+    /*
+     * Barrel
+     */
+
+    const barrelGradient =
+        ctx.createLinearGradient(
+            x,
+            y,
+            x,
+            y +
+            gunH
+        );
+
+    barrelGradient.addColorStop(
+        0,
+        "#444"
+    );
+
+    barrelGradient.addColorStop(
+        .5,
+        "#111"
+    );
+
+    barrelGradient.addColorStop(
+        1,
+        "#030303"
+    );
+
+    ctx.fillStyle =
+        barrelGradient;
+
     ctx.fillRect(
-        -20,
-        -55,
-        40,
-        55
+        x +
+        gunW * .58,
+        y +
+        gunH * .32,
+        gunW * .40,
+        gunH * .11
+    );
+
+
+    /*
+     * Second barrel
+     */
+
+    ctx.fillRect(
+        x +
+        gunW * .58,
+        y +
+        gunH * .45,
+        gunW * .40,
+        gunH * .09
+    );
+
+
+    /*
+     * Front
+     */
+
+    ctx.fillStyle =
+        "#050505";
+
+    ctx.fillRect(
+        x +
+        gunW * .94,
+        y +
+        gunH * .29,
+        gunW * .05,
+        gunH * .28
     );
 
 }
@@ -5494,61 +4698,72 @@ function drawRifle() {
 ========================================================= */
 
 function drawMuzzleFlash(
+    cx,
+    baseY,
     width,
     height
 ) {
 
-    const alpha =
-        Math.min(
-            1,
-            muzzleFlashTimer *
-            18
-        );
+    const size =
+        currentWeapon ===
+        "shotgun"
+            ? 95
+            : 55;
 
+    const x =
+        cx;
+
+    const y =
+        baseY -
+        height *
+        .52 +
+        recoil *
+        2;
 
     const gradient =
         ctx.createRadialGradient(
-            width / 2,
-            height * .72,
-            5,
-            width / 2,
-            height * .72,
-            130
+            x,
+            y,
+            2,
+            x,
+            y,
+            size
         );
-
 
     gradient.addColorStop(
         0,
-        "rgba(255,255,255," +
-        alpha +
-        ")"
+        "rgba(255,255,230,.95)"
     );
-
 
     gradient.addColorStop(
-        .25,
-        "rgba(200,200,200," +
-        alpha * .6 +
-        ")"
+        .2,
+        "rgba(255,210,100,.8)"
     );
 
+    gradient.addColorStop(
+        .55,
+        "rgba(255,100,20,.25)"
+    );
 
     gradient.addColorStop(
         1,
-        "rgba(0,0,0,0)"
+        "rgba(255,0,0,0)"
     );
-
 
     ctx.fillStyle =
         gradient;
 
+    ctx.beginPath();
 
-    ctx.fillRect(
+    ctx.arc(
+        x,
+        y,
+        size,
         0,
-        0,
-        width,
-        height
+        Math.PI * 2
     );
+
+    ctx.fill();
 
 }
 
@@ -5557,36 +4772,37 @@ function drawMuzzleFlash(
    APPARITION
 ========================================================= */
 
-function updateHorror(
-    dt
-) {
+function updateHorror(dt) {
+
+    if (
+        !gameStarted ||
+        paused ||
+        gameOver
+    ) {
+
+        return;
+
+    }
 
     apparitionTimer +=
         dt;
 
-
     if (
         !apparitionActive &&
-        apparitionTimer >
-        18
+        apparitionTimer > 18
     ) {
 
-        apparitionTimer =
-            0;
-
+        apparitionTimer = 0;
 
         if (
-            Math.random() <
-            .5
+            Math.random() < .55
         ) {
 
             apparitionActive =
                 true;
 
-
             if (
-                apparitionTimeout !==
-                null
+                apparitionTimeout
             ) {
 
                 clearTimeout(
@@ -5595,7 +4811,6 @@ function updateHorror(
 
             }
 
-
             apparitionTimeout =
                 setTimeout(
                     function() {
@@ -5603,10 +4818,12 @@ function updateHorror(
                         apparitionActive =
                             false;
 
-                    },
-                    1500
-                );
+                        apparitionTimeout =
+                            null;
 
+                    },
+                    1800
+                );
 
             playWhisper();
 
@@ -5626,30 +4843,24 @@ function drawApparition(
     height
 ) {
 
-    if (
-        !apparitionActive
-    ) {
+    if (!apparitionActive) {
 
         return;
 
     }
 
-
     const alpha =
         .10 +
         Math.sin(
-            elapsed * 10
+            elapsed * 9
         ) *
-        .025;
-
+        .03;
 
     const centerX =
         width / 2;
 
-
     const centerY =
         height / 2;
-
 
     const gradient =
         ctx.createRadialGradient(
@@ -5658,9 +4869,8 @@ function drawApparition(
             10,
             centerX,
             centerY,
-            250
+            230
         );
-
 
     gradient.addColorStop(
         0,
@@ -5669,39 +4879,33 @@ function drawApparition(
         ")"
     );
 
-
     gradient.addColorStop(
-        .4,
-        "rgba(130,130,130," +
-        alpha *
-        .4 +
+        .35,
+        "rgba(100,100,100," +
+        alpha * .5 +
         ")"
     );
-
 
     gradient.addColorStop(
         1,
         "rgba(0,0,0,0)"
     );
 
-
     ctx.fillStyle =
         gradient;
 
-
     ctx.beginPath();
-
 
     ctx.ellipse(
         centerX,
-        centerY - 40,
-        75,
-        145,
+        centerY -
+        30,
+        70,
+        130,
         0,
         0,
         Math.PI * 2
     );
-
 
     ctx.fill();
 
@@ -5709,438 +4913,30 @@ function drawApparition(
 
 
 /* =========================================================
-   DAMAGE EFFECT
+   AUDIO
 ========================================================= */
 
-function drawDamageEffect(
-    width,
-    height
-) {
+let audioContext = null;
 
-    if (
-        player.damageFlash <=
-        0
-    ) {
+let masterGain = null;
 
-        return;
-
-    }
-
-
-    ctx.fillStyle =
-        "rgba(180,0,0," +
-        Math.min(
-            .4,
-            player.damageFlash
-        ) +
-        ")";
-
-
-    ctx.fillRect(
-        0,
-        0,
-        width,
-        height
-    );
-
-}
+let ambientGain = null;
 
 
 /* =========================================================
-   HIT MARKER
-========================================================= */
-
-function showHitMarker() {
-
-    if (!hitMarker) {
-
-        return;
-
-    }
-
-
-    hitMarker.style.opacity =
-        "1";
-
-
-    clearTimeout(
-        showHitMarker.timer
-    );
-
-
-    showHitMarker.timer =
-        setTimeout(
-            function() {
-
-                if (hitMarker) {
-
-                    hitMarker.style.opacity =
-                        "0";
-
-                }
-
-            },
-            90
-        );
-
-}
-
-
-/* =========================================================
-   MESSAGE
-========================================================= */
-
-function showMessage(
-    mainText,
-    subText
-) {
-
-    if (!message) {
-
-        return;
-
-    }
-
-
-    clearTimeout(
-        messageTimer
-    );
-
-
-    message.innerHTML =
-        "";
-
-
-    const main =
-        document.createElement(
-            "div"
-        );
-
-
-    main.textContent =
-        mainText || "";
-
-
-    message.appendChild(
-        main
-    );
-
-
-    if (
-        subText
-    ) {
-
-        const span =
-            document.createElement(
-                "span"
-            );
-
-
-        span.textContent =
-            subText;
-
-
-        message.appendChild(
-            span
-        );
-
-    }
-
-
-    message.classList.add(
-        "visible"
-    );
-
-
-    messageTimer =
-        setTimeout(
-            function() {
-
-                message.classList.remove(
-                    "visible"
-                );
-
-            },
-            2800
-        );
-
-}
-
-
-/* =========================================================
-   HIDE MESSAGE
-========================================================= */
-
-function hideMessage() {
-
-    if (!message) {
-
-        return;
-
-    }
-
-
-    clearTimeout(
-        messageTimer
-    );
-
-
-    message.classList.remove(
-        "visible"
-    );
-
-}
-
-
-/* =========================================================
-   INTERACTION HIDE
-========================================================= */
-
-function hideInteraction() {
-
-    if (
-        interaction
-    ) {
-
-        interaction.classList.remove(
-            "visible"
-        );
-
-    }
-
-}
-
-
-/* =========================================================
-   PLAYER DAMAGE EFFECT UPDATE
-========================================================= */
-
-function updatePlayerEffects(
-    dt
-) {
-
-    player.damageFlash =
-        Math.max(
-            0,
-            player.damageFlash -
-            dt
-        );
-
-}
-
-
-/* =========================================================
-   WEAPON TIMER UPDATE
-========================================================= */
-
-function updateWeapon(
-    dt
-) {
-
-    weaponCooldown =
-        Math.max(
-            0,
-            weaponCooldown -
-            dt
-        );
-
-
-    muzzleFlashTimer =
-        Math.max(
-            0,
-            muzzleFlashTimer -
-            dt
-        );
-
-
-    updateReload(
-        dt
-    );
-
-
-    updateShooting(
-        dt
-    );
-
-}
-
-
-/* =========================================================
-   GAME OVER
-========================================================= */
-
-function loseGame() {
-
-    if (
-        gameOver ||
-        victory
-    ) {
-
-        return;
-
-    }
-
-
-    gameOver =
-        true;
-
-    paused =
-        false;
-
-    resetKeys();
-
-
-    if (
-        document.pointerLockElement ===
-        canvas
-    ) {
-
-        try {
-
-            document.exitPointerLock();
-
-        } catch (error) {}
-
-    }
-
-
-    const deathKills =
-        document.getElementById(
-            "deathKills"
-        );
-
-
-    if (deathKills) {
-
-        deathKills.textContent =
-            zombiesKilled;
-
-    }
-
-
-    if (gameOverPanel) {
-
-        gameOverPanel.style.display =
-            "flex";
-
-    }
-
-}
-
-
-/* =========================================================
-   VICTORY
-========================================================= */
-
-function winGame() {
-
-    if (
-        gameOver ||
-        victory
-    ) {
-
-        return;
-
-    }
-
-
-    victory =
-        true;
-
-
-    resetKeys();
-
-
-    if (
-        document.pointerLockElement ===
-        canvas
-    ) {
-
-        try {
-
-            document.exitPointerLock();
-
-        } catch (error) {}
-
-    }
-
-
-    const victoryKills =
-        document.getElementById(
-            "victoryKills"
-        );
-
-
-    if (victoryKills) {
-
-        victoryKills.textContent =
-            zombiesKilled;
-
-    }
-
-
-    if (victoryPanel) {
-
-        victoryPanel.style.display =
-            "flex";
-
-    }
-
-}
-
-
-/* =========================================================
-   ANGLE
-========================================================= */
-
-function normalizeAngle(
-    angle
-) {
-
-    while (
-        angle >
-        Math.PI
-    ) {
-
-        angle -=
-            Math.PI * 2;
-
-    }
-
-
-    while (
-        angle <
-        -Math.PI
-    ) {
-
-        angle +=
-            Math.PI * 2;
-
-    }
-
-
-    return angle;
-
-}
-
-
-/* =========================================================
-   AUDIO START
+   START AUDIO
 ========================================================= */
 
 function startAudio() {
 
-    if (
-        audioContext
-    ) {
+    if (audioContext) {
 
         if (
             audioContext.state ===
             "suspended"
         ) {
 
-            audioContext
-                .resume()
+            audioContext.resume()
                 .catch(
                     function() {}
                 );
@@ -6151,50 +4947,33 @@ function startAudio() {
 
     }
 
-
     try {
 
-        const AudioContextClass =
-            window.AudioContext ||
-            window.webkitAudioContext;
-
-
-        if (!AudioContextClass) {
-
-            return;
-
-        }
-
-
         audioContext =
-            new AudioContextClass();
-
+            new (
+                window.AudioContext ||
+                window.webkitAudioContext
+            )();
 
         masterGain =
             audioContext.createGain();
 
-
         masterGain.gain.value =
-            .45;
-
+            .48;
 
         masterGain.connect(
             audioContext.destination
         );
 
-
         ambientGain =
             audioContext.createGain();
-
 
         ambientGain.gain.value =
             .035;
 
-
         ambientGain.connect(
             masterGain
         );
-
 
         startAmbient();
 
@@ -6215,82 +4994,58 @@ function startAudio() {
 
 function startAmbient() {
 
-    if (
-        !audioContext ||
-        !ambientGain
-    ) {
-
+    if (!audioContext) {
         return;
-
     }
 
-
     const oscillator =
-        audioContext
-            .createOscillator();
-
+        audioContext.createOscillator();
 
     const gain =
-        audioContext
-            .createGain();
-
+        audioContext.createGain();
 
     oscillator.type =
         "sine";
 
-
     oscillator.frequency.value =
         43;
 
-
     gain.gain.value =
         .18;
-
 
     oscillator.connect(
         gain
     );
 
-
     gain.connect(
         ambientGain
     );
-
 
     oscillator.start();
 
 
     const oscillator2 =
-        audioContext
-            .createOscillator();
-
+        audioContext.createOscillator();
 
     const gain2 =
-        audioContext
-            .createGain();
-
+        audioContext.createGain();
 
     oscillator2.type =
         "triangle";
 
-
     oscillator2.frequency.value =
         67;
 
-
     gain2.gain.value =
         .045;
-
 
     oscillator2.connect(
         gain2
     );
 
-
     gain2.connect(
         ambientGain
     );
-
 
     oscillator2.start();
 
@@ -6298,88 +5053,126 @@ function startAmbient() {
 
 
 /* =========================================================
-   GUN SOUND
+   GUNSHOT
 ========================================================= */
 
-function playGunSound(
-    weaponType
+function playGunshot(
+    weapon
 ) {
 
-    if (
-        !audioContext ||
-        !masterGain
-    ) {
-
+    if (!audioContext) {
         return;
-
     }
-
 
     const now =
         audioContext.currentTime;
 
-
     const oscillator =
-        audioContext
-            .createOscillator();
-
+        audioContext.createOscillator();
 
     const gain =
-        audioContext
-            .createGain();
-
+        audioContext.createGain();
 
     oscillator.type =
-        weaponType ===
-        "shotgun"
-            ? "sawtooth"
-            : "square";
-
+        "sawtooth";
 
     oscillator.frequency.setValueAtTime(
-        weaponType ===
-        "shotgun"
-            ? 80
-            : 150,
+        weapon.soundFrequency,
         now
     );
-
 
     oscillator.frequency.exponentialRampToValueAtTime(
         35,
-        now + .12
+        now + .18
     );
 
-
     gain.gain.setValueAtTime(
-        .18,
+        .22,
         now
     );
 
-
     gain.gain.exponentialRampToValueAtTime(
         .0001,
-        now + .14
+        now + .18
     );
-
 
     oscillator.connect(
         gain
     );
 
-
     gain.connect(
         masterGain
     );
-
 
     oscillator.start(
         now
     );
 
-
     oscillator.stop(
-        now + .15
+        now + .2
+    );
+
+    /*
+     * Noise layer
+     */
+
+    const buffer =
+        audioContext.createBuffer(
+            1,
+            Math.floor(
+                audioContext.sampleRate *
+                .12
+            ),
+            audioContext.sampleRate
+        );
+
+    const data =
+        buffer.getChannelData(0);
+
+    for (
+        let i = 0;
+        i < data.length;
+        i++
+    ) {
+
+        data[i] =
+            (
+                Math.random() *
+                2 -
+                1
+            ) *
+            (
+                1 -
+                i /
+                data.length
+            );
+
+    }
+
+    const source =
+        audioContext
+            .createBufferSource();
+
+    source.buffer =
+        buffer;
+
+    const noiseGain =
+        audioContext
+            .createGain();
+
+    noiseGain.gain.value =
+        .18;
+
+    source.connect(
+        noiseGain
+    );
+
+    noiseGain.connect(
+        masterGain
+    );
+
+    source.start(
+        now
     );
 
 }
@@ -6389,66 +5182,46 @@ function playGunSound(
    EMPTY GUN
 ========================================================= */
 
-function playEmptyGunSound() {
+function playEmptyGun() {
 
-    if (
-        !audioContext ||
-        !masterGain
-    ) {
-
+    if (!audioContext) {
         return;
-
     }
-
 
     const now =
         audioContext.currentTime;
 
-
     const oscillator =
-        audioContext
-            .createOscillator();
-
+        audioContext.createOscillator();
 
     const gain =
-        audioContext
-            .createGain();
-
+        audioContext.createGain();
 
     oscillator.type =
         "square";
 
-
     oscillator.frequency.value =
-        90;
-
+        180;
 
     gain.gain.setValueAtTime(
-        .06,
+        .05,
         now
     );
-
 
     gain.gain.exponentialRampToValueAtTime(
         .0001,
         now + .06
     );
 
-
     oscillator.connect(
         gain
     );
-
 
     gain.connect(
         masterGain
     );
 
-
-    oscillator.start(
-        now
-    );
-
+    oscillator.start(now);
 
     oscillator.stop(
         now + .07
@@ -6463,211 +5236,229 @@ function playEmptyGunSound() {
 
 function playReloadSound() {
 
-    if (
-        !audioContext ||
-        !masterGain
-    ) {
-
+    if (!audioContext) {
         return;
-
     }
-
 
     const now =
         audioContext.currentTime;
 
+    for (
+        let i = 0;
+        i < 3;
+        i++
+    ) {
+
+        const oscillator =
+            audioContext.createOscillator();
+
+        const gain =
+            audioContext.createGain();
+
+        oscillator.type =
+            "square";
+
+        oscillator.frequency.value =
+            i === 1
+                ? 120
+                : 75;
+
+        gain.gain.setValueAtTime(
+            .0001,
+            now +
+            i * .22
+        );
+
+        gain.gain.exponentialRampToValueAtTime(
+            .07,
+            now +
+            i * .22 +
+            .01
+        );
+
+        gain.gain.exponentialRampToValueAtTime(
+            .0001,
+            now +
+            i * .22 +
+            .08
+        );
+
+        oscillator.connect(
+            gain
+        );
+
+        gain.connect(
+            masterGain
+        );
+
+        oscillator.start(
+            now +
+            i * .22
+        );
+
+        oscillator.stop(
+            now +
+            i * .22 +
+            .1
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   WEAPON SWITCH
+========================================================= */
+
+function playWeaponSwitch() {
+
+    if (!audioContext) {
+        return;
+    }
+
+    const now =
+        audioContext.currentTime;
 
     const oscillator =
-        audioContext
-            .createOscillator();
-
+        audioContext.createOscillator();
 
     const gain =
-        audioContext
-            .createGain();
-
+        audioContext.createGain();
 
     oscillator.type =
         "triangle";
 
-
     oscillator.frequency.value =
-        180;
-
+        220;
 
     gain.gain.setValueAtTime(
         .05,
         now
     );
 
-
     gain.gain.exponentialRampToValueAtTime(
         .0001,
-        now + .25
+        now + .1
     );
-
 
     oscillator.connect(
         gain
     );
 
-
     gain.connect(
         masterGain
     );
 
-
-    oscillator.start(
-        now
-    );
-
+    oscillator.start(now);
 
     oscillator.stop(
-        now + .26
+        now + .11
     );
 
 }
 
 
 /* =========================================================
-   RELOAD COMPLETE
+   FOOTSTEP
 ========================================================= */
 
-function playReloadCompleteSound() {
+function playFootstep() {
 
-    if (
-        !audioContext ||
-        !masterGain
-    ) {
-
+    if (!audioContext) {
         return;
-
     }
-
 
     const now =
         audioContext.currentTime;
 
+    const buffer =
+        audioContext.createBuffer(
+            1,
+            Math.floor(
+                audioContext.sampleRate *
+                .10
+            ),
+            audioContext.sampleRate
+        );
 
-    const oscillator =
+    const data =
+        buffer.getChannelData(0);
+
+    for (
+        let i = 0;
+        i < data.length;
+        i++
+    ) {
+
+        const fade =
+            1 -
+            i /
+            data.length;
+
+        data[i] =
+            (
+                Math.random() *
+                2 -
+                1
+            ) *
+            fade *
+            fade;
+
+    }
+
+    const source =
         audioContext
-            .createOscillator();
+            .createBufferSource();
 
+    source.buffer =
+        buffer;
+
+    const filter =
+        audioContext
+            .createBiquadFilter();
+
+    filter.type =
+        "lowpass";
+
+    filter.frequency.value =
+        900;
 
     const gain =
         audioContext
             .createGain();
 
-
-    oscillator.type =
-        "square";
-
-
-    oscillator.frequency.value =
-        280;
-
-
     gain.gain.setValueAtTime(
-        .04,
+        .0001,
         now
     );
 
+    gain.gain.exponentialRampToValueAtTime(
+        .11,
+        now + .012
+    );
 
     gain.gain.exponentialRampToValueAtTime(
         .0001,
-        now + .07
+        now + .10
     );
 
+    source.connect(
+        filter
+    );
 
-    oscillator.connect(
+    filter.connect(
         gain
     );
-
 
     gain.connect(
         masterGain
     );
 
+    source.start(now);
 
-    oscillator.start(
-        now
-    );
-
-
-    oscillator.stop(
-        now + .08
-    );
-
-}
-
-
-/* =========================================================
-   FLASHLIGHT SOUND
-========================================================= */
-
-function playFlashlightClick() {
-
-    if (
-        !audioContext ||
-        !masterGain
-    ) {
-
-        return;
-
-    }
-
-
-    const now =
-        audioContext.currentTime;
-
-
-    const oscillator =
-        audioContext
-            .createOscillator();
-
-
-    const gain =
-        audioContext
-            .createGain();
-
-
-    oscillator.type =
-        "square";
-
-
-    oscillator.frequency.value =
-        140;
-
-
-    gain.gain.setValueAtTime(
-        .06,
-        now
-    );
-
-
-    gain.gain.exponentialRampToValueAtTime(
-        .0001,
-        now + .05
-    );
-
-
-    oscillator.connect(
-        gain
-    );
-
-
-    gain.connect(
-        masterGain
-    );
-
-
-    oscillator.start(
-        now
-    );
-
-
-    oscillator.stop(
-        now + .06
+    source.stop(
+        now + .11
     );
 
 }
@@ -6679,72 +5470,56 @@ function playFlashlightClick() {
 
 function playDoorSound() {
 
-    if (
-        !audioContext ||
-        !masterGain
-    ) {
-
+    if (!audioContext) {
         return;
-
     }
-
 
     const now =
         audioContext.currentTime;
 
-
     const oscillator =
-        audioContext
-            .createOscillator();
-
+        audioContext.createOscillator();
 
     const gain =
-        audioContext
-            .createGain();
-
+        audioContext.createGain();
 
     oscillator.type =
         "sawtooth";
-
 
     oscillator.frequency.setValueAtTime(
         70,
         now
     );
 
-
     oscillator.frequency.exponentialRampToValueAtTime(
         32,
         now + 1.2
     );
 
-
     gain.gain.setValueAtTime(
-        .12,
+        .0001,
         now
     );
 
+    gain.gain.exponentialRampToValueAtTime(
+        .12,
+        now + .04
+    );
 
     gain.gain.exponentialRampToValueAtTime(
         .0001,
         now + 1.2
     );
 
-
     oscillator.connect(
         gain
     );
-
 
     gain.connect(
         masterGain
     );
 
-
-    oscillator.start(
-        now
-    );
-
+    oscillator.start(now);
 
     oscillator.stop(
         now + 1.3
@@ -6754,69 +5529,56 @@ function playDoorSound() {
 
 
 /* =========================================================
-   ZOMBIE HIT SOUND
+   ZOMBIE HIT
 ========================================================= */
 
-function playZombieHitSound() {
+function playZombieHit() {
 
-    if (
-        !audioContext ||
-        !masterGain
-    ) {
-
+    if (!audioContext) {
         return;
-
     }
-
 
     const now =
         audioContext.currentTime;
 
-
     const oscillator =
-        audioContext
-            .createOscillator();
-
+        audioContext.createOscillator();
 
     const gain =
-        audioContext
-            .createGain();
-
+        audioContext.createGain();
 
     oscillator.type =
-        "sawtooth";
+        "triangle";
 
-
-    oscillator.frequency.value =
-        90;
-
-
-    gain.gain.setValueAtTime(
-        .06,
+    oscillator.frequency.setValueAtTime(
+        130,
         now
     );
 
+    oscillator.frequency.exponentialRampToValueAtTime(
+        55,
+        now + .12
+    );
+
+    gain.gain.setValueAtTime(
+        .08,
+        now
+    );
 
     gain.gain.exponentialRampToValueAtTime(
         .0001,
         now + .12
     );
 
-
     oscillator.connect(
         gain
     );
-
 
     gain.connect(
         masterGain
     );
 
-
-    oscillator.start(
-        now
-    );
-
+    oscillator.start(now);
 
     oscillator.stop(
         now + .13
@@ -6826,77 +5588,56 @@ function playZombieHitSound() {
 
 
 /* =========================================================
-   ZOMBIE DEATH SOUND
+   ZOMBIE DEATH
 ========================================================= */
 
-function playZombieDeathSound() {
+function playZombieDeath() {
 
-    if (
-        !audioContext ||
-        !masterGain
-    ) {
-
+    if (!audioContext) {
         return;
-
     }
-
 
     const now =
         audioContext.currentTime;
 
-
     const oscillator =
-        audioContext
-            .createOscillator();
-
+        audioContext.createOscillator();
 
     const gain =
-        audioContext
-            .createGain();
-
+        audioContext.createGain();
 
     oscillator.type =
         "sawtooth";
 
-
     oscillator.frequency.setValueAtTime(
-        180,
+        100,
         now
     );
 
-
     oscillator.frequency.exponentialRampToValueAtTime(
-        40,
+        25,
         now + .45
     );
 
-
     gain.gain.setValueAtTime(
-        .09,
+        .12,
         now
     );
-
 
     gain.gain.exponentialRampToValueAtTime(
         .0001,
         now + .45
     );
 
-
     oscillator.connect(
         gain
     );
-
 
     gain.connect(
         masterGain
     );
 
-
-    oscillator.start(
-        now
-    );
-
+    oscillator.start(now);
 
     oscillator.stop(
         now + .5
@@ -6906,80 +5647,104 @@ function playZombieDeathSound() {
 
 
 /* =========================================================
-   ZOMBIE ATTACK SOUND
+   PLAYER DAMAGE SOUND
 ========================================================= */
 
-function playZombieAttackSound() {
+function playPlayerDamage() {
 
-    if (
-        !audioContext ||
-        !masterGain
-    ) {
-
+    if (!audioContext) {
         return;
-
     }
-
 
     const now =
         audioContext.currentTime;
 
-
     const oscillator =
-        audioContext
-            .createOscillator();
-
+        audioContext.createOscillator();
 
     const gain =
-        audioContext
-            .createGain();
-
+        audioContext.createGain();
 
     oscillator.type =
         "sawtooth";
 
-
-    oscillator.frequency.setValueAtTime(
-        120,
-        now
-    );
-
-
-    oscillator.frequency.exponentialRampToValueAtTime(
-        45,
-        now + .3
-    );
-
+    oscillator.frequency.value =
+        55;
 
     gain.gain.setValueAtTime(
-        .11,
+        .13,
         now
     );
-
 
     gain.gain.exponentialRampToValueAtTime(
         .0001,
         now + .3
     );
 
-
     oscillator.connect(
         gain
     );
-
 
     gain.connect(
         masterGain
     );
 
+    oscillator.start(now);
 
-    oscillator.start(
+    oscillator.stop(
+        now + .32
+    );
+
+}
+
+
+/* =========================================================
+   FLASHLIGHT CLICK
+========================================================= */
+
+function playFlashlightClick() {
+
+    if (!audioContext) {
+        return;
+    }
+
+    const now =
+        audioContext.currentTime;
+
+    const oscillator =
+        audioContext.createOscillator();
+
+    const gain =
+        audioContext.createGain();
+
+    oscillator.type =
+        "square";
+
+    oscillator.frequency.value =
+        140;
+
+    gain.gain.setValueAtTime(
+        .06,
         now
     );
 
+    gain.gain.exponentialRampToValueAtTime(
+        .0001,
+        now + .045
+    );
+
+    oscillator.connect(
+        gain
+    );
+
+    gain.connect(
+        masterGain
+    );
+
+    oscillator.start(now);
 
     oscillator.stop(
-        now + .35
+        now + .05
     );
 
 }
@@ -6991,32 +5756,25 @@ function playZombieAttackSound() {
 
 function playWhisper() {
 
-    if (
-        !audioContext ||
-        !masterGain
-    ) {
-
+    if (!audioContext) {
         return;
-
     }
 
+    const now =
+        audioContext.currentTime;
 
     const buffer =
         audioContext.createBuffer(
             1,
             Math.floor(
                 audioContext.sampleRate *
-                1.3
+                1.5
             ),
             audioContext.sampleRate
         );
 
-
     const data =
-        buffer.getChannelData(
-            0
-        );
-
+        buffer.getChannelData(0);
 
     for (
         let i = 0;
@@ -7031,7 +5789,6 @@ function playWhisper() {
                 data.length
             );
 
-
         data[i] =
             (
                 Math.random() *
@@ -7042,130 +5799,128 @@ function playWhisper() {
 
     }
 
-
     const source =
         audioContext
             .createBufferSource();
 
-
     source.buffer =
         buffer;
-
 
     const filter =
         audioContext
             .createBiquadFilter();
 
-
     filter.type =
         "bandpass";
-
 
     filter.frequency.value =
         1100;
 
-
     filter.Q.value =
         3;
-
 
     const gain =
         audioContext
             .createGain();
 
-
     gain.gain.value =
-        .06;
-
+        .07;
 
     source.connect(
         filter
     );
 
-
     filter.connect(
         gain
     );
-
 
     gain.connect(
         masterGain
     );
 
-
-    source.start();
+    source.start(now);
 
 }
 
 
 /* =========================================================
-   FOOTSTEP
+   UPDATE COMBAT
 ========================================================= */
 
-function playFootstep() {
+function updateCombat(dt) {
+
+    fireCooldown =
+        Math.max(
+            0,
+            fireCooldown -
+            dt
+        );
+
+    muzzleFlashTimer =
+        Math.max(
+            0,
+            muzzleFlashTimer -
+            dt
+        );
+
+    recoil =
+        Math.max(
+            0,
+            recoil -
+            dt *
+            30
+        );
+
+    shakeAmount =
+        Math.max(
+            0,
+            shakeAmount -
+            dt *
+            20
+        );
+
+    damageFlash =
+        Math.max(
+            0,
+            damageFlash -
+            dt *
+            2.5
+        );
+
+    /*
+     * Hold left mouse to fire.
+     */
 
     if (
-        !audioContext ||
-        !masterGain
+        shooting &&
+        document.pointerLockElement ===
+        canvas
     ) {
 
-        return;
+        shoot();
 
     }
 
-
-    const now =
-        audioContext.currentTime;
+}
 
 
-    const oscillator =
-        audioContext
-            .createOscillator();
+/* =========================================================
+   DAMAGE EFFECT
+========================================================= */
 
+function updateDamageEffect() {
 
-    const gain =
-        audioContext
-            .createGain();
+    const overlay =
+        document.getElementById(
+            "damageOverlay"
+        );
 
+    if (!overlay) {
+        return;
+    }
 
-    oscillator.type =
-        "triangle";
-
-
-    oscillator.frequency.value =
-        65;
-
-
-    gain.gain.setValueAtTime(
-        .06,
-        now
-    );
-
-
-    gain.gain.exponentialRampToValueAtTime(
-        .0001,
-        now + .09
-    );
-
-
-    oscillator.connect(
-        gain
-    );
-
-
-    gain.connect(
-        masterGain
-    );
-
-
-    oscillator.start(
-        now
-    );
-
-
-    oscillator.stop(
-        now + .1
-    );
+    overlay.style.opacity =
+        damageFlash;
 
 }
 
@@ -7178,121 +5933,49 @@ let lastTime =
     performance.now();
 
 
-function loop(
-    now
-) {
+function loop(now) {
 
     const dt =
         Math.min(
-            .05,
-            Math.max(
-                0,
-                (
-                    now -
-                    lastTime
-                ) / 1000
-            )
+            (
+                now -
+                lastTime
+            ) / 1000,
+            .05
         );
-
 
     lastTime =
         now;
 
-
     if (
         gameStarted &&
         !paused &&
-        !gameOver &&
-        !victory
+        !gameOver
     ) {
 
-        elapsed +=
-            dt;
+        elapsed += dt;
 
+        updateMovement(dt);
 
-        updateMovement(
-            dt
-        );
-
-
-        updateBattery(
-            dt
-        );
-
+        updateBattery(dt);
 
         updateInteraction();
 
+        updateHorror(dt);
 
-        updateHorror(
-            dt
-        );
+        updateReload(dt);
 
+        updateCombat(dt);
 
-        updateWeapon(
-            dt
-        );
+        updateZombies(dt);
 
-
-        updateZombies(
-            dt
-        );
-
-
-        updateZombieSpawning(
-            dt
-        );
-
-
-        updatePlayerEffects(
-            dt
-        );
-
+        updateDamageEffect();
 
         updateHUD();
 
-
-        /* -----------------------------------------
-           PLAYER FOOTSTEP
-        ----------------------------------------- */
-
-        if (
-            player.sprinting &&
-            (
-                keys.w ||
-                keys.a ||
-                keys.s ||
-                keys.d
-            )
-        ) {
-
-            shellTimer -=
-                dt;
-
-
-            if (
-                shellTimer <=
-                0
-            ) {
-
-                playFootstep();
-
-                shellTimer =
-                    .27;
-
-            }
-
-        } else {
-
-            shellTimer =
-                0;
-
-        }
-
     }
 
-
     render();
-
 
     requestAnimationFrame(
         loop
@@ -7305,9 +5988,16 @@ function loop(
    INITIALIZATION
 ========================================================= */
 
+createHUD();
+
 resetGame();
 
-updateHUD();
+if (objective) {
+
+    objective.textContent =
+        "Find a way out.";
+
+}
 
 requestAnimationFrame(
     loop
