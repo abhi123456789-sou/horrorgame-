@@ -238,40 +238,8 @@
 
 </div>
 
-<script>
-    const startScreen = document.getElementById("startScreen");
-    const startButton = document.getElementById("startButton");
-    const message = document.getElementById("message");
+<script src="game.js"></script>
 
-    startButton.addEventListener("click", () => {
-        startScreen.style.transition = "opacity 2s";
-        startScreen.style.opacity = "0";
-
-        setTimeout(() => {
-            startScreen.style.display = "none";
-        }, 2000);
-
-        message.innerHTML =
-            "The door is closed." +
-            "<span>Press E to investigate.</span>";
-    });
-
-    document.addEventListener("keydown", (event) => {
-
-        if (event.key.toLowerCase() === "e") {
-            message.innerHTML =
-                "You put your hand on the door." +
-                "<span>It's colder than it should be.</span>";
-
-            setTimeout(() => {
-                message.innerHTML =
-                    "Something is on the other side." +
-                    "<span>Don't open it.</span>";
-            }, 3500);
-        }
-
-    });
-</script>
 
 </body>
 </html>
