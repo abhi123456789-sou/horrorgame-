@@ -2,187 +2,421 @@
 <html lang="en">
 
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>THE LAST ROOM</title>
+    <meta
+        name="viewport"
+        content="width=device-width,
+                 initial-scale=1.0,
+                 maximum-scale=1.0,
+                 user-scalable=no"
+    >
 
-    <link rel="stylesheet" href="style.css">
+    <meta
+        name="theme-color"
+        content="#000000"
+    >
+
+    <title>
+        THE LAST ROOM
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="style.css"
+    >
+
 </head>
+
 
 <body>
 
-    <main id="game">
+<div id="game">
 
-        <canvas id="gameCanvas"></canvas>
 
-        <!-- =========================
-             HUD
-        ========================== -->
+    <!-- =====================================================
+         GAME CANVAS
+    ====================================================== -->
 
-        <div id="hud">
+    <canvas id="gameCanvas"></canvas>
 
-            <div id="gameTitle">
-                THE LAST ROOM
+
+    <!-- =====================================================
+         CROSSHAIR
+    ====================================================== -->
+
+    <div id="crosshair">
+
+        <span></span>
+
+    </div>
+
+
+    <!-- =====================================================
+         HUD
+    ====================================================== -->
+
+    <div id="hud">
+
+
+        <!-- PLAYER HEALTH -->
+
+        <div id="health">
+
+            <div class="hudTitle">
+                HEALTH
             </div>
 
-            <div id="objective">
-                Find a way out.
-            </div>
+            <div class="bar">
 
-            <div id="crosshair">
-                <span></span>
-            </div>
-
-            <div id="interaction">
-
-                <div id="interactionMain"></div>
-
-                <div id="interactionSub"></div>
+                <div
+                    id="healthFill"
+                    class="healthFill"
+                ></div>
 
             </div>
 
-            <div id="status">
-
-                <div>FLASHLIGHT</div>
-
-                <div id="batteryBar">
-                    <div id="batteryFill"></div>
-                </div>
-
+            <div
+                id="healthText"
+                class="hudValue"
+            >
+                100 / 100
             </div>
-
-            <div id="message"></div>
-
-            <div id="vignette"></div>
-
-            <div id="noise"></div>
 
         </div>
 
 
-        <!-- =========================
-             MAIN MENU
-        ========================== -->
+        <!-- FLASHLIGHT BATTERY -->
 
-        <section id="mainMenu" class="menu">
+        <div id="battery">
 
-            <div class="menuContent">
+            <div class="hudTitle">
+                BATTERY
+            </div>
 
-                <div class="eyebrow">
-                    AN EXPERIMENT IN PSYCHOLOGICAL HORROR
-                </div>
+            <div class="bar">
 
-                <h1>
-                    THE LAST ROOM
-                </h1>
-
-                <p class="menuDescription">
-
-                    You woke up somewhere
-                    you don't remember entering.
-
-                    <br>
-
-                    The electricity is still working.
-
-                    <br>
-
-                    Nobody should be here.
-
-                </p>
-
-                <button
-                    id="startButton"
-                    class="menuButton"
-                >
-                    ENTER
-                </button>
-
-                <button
-                    id="controlsButton"
-                    class="textButton"
-                >
-                    CONTROLS
-                </button>
+                <div
+                    id="batteryFill"
+                    class="batteryFill"
+                ></div>
 
             </div>
 
-        </section>
+            <div
+                id="batteryText"
+                class="hudValue"
+            >
+                100%
+            </div>
+
+        </div>
 
 
-        <!-- =========================
-             PAUSE MENU
-        ========================== -->
+        <!-- OBJECTIVE -->
 
-        <section
-            id="pauseMenu"
-            class="menu hidden"
-        >
+        <div id="objective">
 
-            <div class="menuContent">
+            Find a way out.
 
-                <div class="eyebrow">
-                    PAUSED
-                </div>
+        </div>
 
-                <h2>
-                    THE LAST ROOM
-                </h2>
 
-                <button
-                    id="resumeButton"
-                    class="menuButton"
-                >
-                    RESUME
-                </button>
+        <!-- WEAPON -->
 
-                <button
-                    id="restartButton"
-                    class="menuButton secondary"
-                >
-                    RESTART
-                </button>
+        <div id="weapon">
 
-                <button
-                    id="pauseControlsButton"
-                    class="textButton"
-                >
-                    CONTROLS
-                </button>
+            <div
+                id="weaponName"
+            >
+                PISTOL
+            </div>
+
+            <div
+                id="ammo"
+            >
+                12 / 48
+            </div>
+
+        </div>
+
+
+        <!-- MESSAGE -->
+
+        <div id="message">
+
+        </div>
+
+
+        <!-- INTERACTION -->
+
+        <div id="interaction">
+
+            <div
+                id="interactionMain"
+            >
+            </div>
+
+            <small
+                id="interactionSub"
+            >
+            </small>
+
+        </div>
+
+
+    </div>
+
+
+
+    <!-- =====================================================
+         MOBILE CONTROLS
+    ====================================================== -->
+
+    <div id="mobile">
+
+
+        <!-- VIRTUAL JOYSTICK -->
+
+        <div id="joy">
+
+            <div id="knob"></div>
+
+        </div>
+
+
+        <!-- MOBILE LOOK AREA -->
+
+        <div id="look">
+
+        </div>
+
+
+        <!-- MOBILE ACTION BUTTONS -->
+
+        <div id="buttons">
+
+
+            <button
+                id="fire"
+                class="mobileButton fireButton"
+            >
+                FIRE
+            </button>
+
+
+            <button
+                id="reload"
+                class="mobileButton"
+            >
+                R
+            </button>
+
+
+            <button
+                id="jump"
+                class="mobileButton"
+            >
+                JUMP
+            </button>
+
+
+            <button
+                id="crouch"
+                class="mobileButton"
+            >
+                CROUCH
+            </button>
+
+
+            <button
+                id="light"
+                class="mobileButton"
+            >
+                LIGHT
+            </button>
+
+
+            <button
+                id="interact"
+                class="mobileButton"
+            >
+                E
+            </button>
+
+
+            <button
+                id="gun"
+                class="mobileButton"
+            >
+                GUN
+            </button>
+
+
+        </div>
+
+
+    </div>
+
+
+
+    <!-- =====================================================
+         MAIN MENU
+    ====================================================== -->
+
+    <section
+        id="menu"
+        class="screen"
+    >
+
+        <div class="panel">
+
+
+            <div class="subtitle">
+
+                SURVIVAL HORROR
 
             </div>
 
-        </section>
+
+            <h1>
+
+                THE LAST ROOM
+
+            </h1>
 
 
-        <!-- =========================
-             CONTROLS
-        ========================== -->
+            <p>
 
-        <section
-            id="controlsPanel"
-            class="panel hidden"
-        >
+                Something is waiting
+                in the dark.
 
-            <div class="controlsBox">
+            </p>
 
-                <button
-                    id="closeControls"
-                    class="closeButton"
-                >
-                    ×
-                </button>
 
-                <h2>
-                    CONTROLS
-                </h2>
+            <button
+                id="start"
+                class="menuButton"
+            >
 
-                <div class="controlRow">
+                ENTER
 
-                    <strong>
+            </button>
+
+
+            <button
+                id="controls"
+                class="menuButton secondary"
+            >
+
+                CONTROLS
+
+            </button>
+
+
+        </div>
+
+    </section>
+
+
+
+    <!-- =====================================================
+         PAUSE MENU
+    ====================================================== -->
+
+    <section
+        id="pause"
+        class="screen hidden"
+    >
+
+        <div class="panel">
+
+
+            <div class="subtitle">
+
+                THE ROOM IS STILL HERE
+
+            </div>
+
+
+            <h2>
+
+                PAUSED
+
+            </h2>
+
+
+            <button
+                id="resume"
+                class="menuButton"
+            >
+
+                RESUME
+
+            </button>
+
+
+            <button
+                id="restart"
+                class="menuButton secondary"
+            >
+
+                RESTART
+
+            </button>
+
+
+            <button
+                id="pcontrols"
+                class="menuButton secondary"
+            >
+
+                CONTROLS
+
+            </button>
+
+
+        </div>
+
+    </section>
+
+
+
+    <!-- =====================================================
+         CONTROLS SCREEN
+    ====================================================== -->
+
+    <section
+        id="help"
+        class="screen hidden"
+    >
+
+        <div class="panel controlsPanel">
+
+
+            <div class="subtitle">
+
+                SURVIVAL GUIDE
+
+            </div>
+
+
+            <h2>
+
+                CONTROLS
+
+            </h2>
+
+
+            <div class="controlList">
+
+
+                <div>
+
+                    <b>
                         W A S D
-                    </strong>
+                    </b>
 
                     <span>
                         Move
@@ -190,23 +424,38 @@
 
                 </div>
 
-                <div class="controlRow">
 
-                    <strong>
+                <div>
+
+                    <b>
                         MOUSE
-                    </strong>
+                    </b>
 
                     <span>
-                        Look around
+                        Look
                     </span>
 
                 </div>
 
-                <div class="controlRow">
 
-                    <strong>
-                        E
-                    </strong>
+                <div>
+
+                    <b>
+                        LEFT CLICK
+                    </b>
+
+                    <span>
+                        Shoot
+                    </span>
+
+                </div>
+
+
+                <div>
+
+                    <b>
+                        RIGHT CLICK
+                    </b>
 
                     <span>
                         Interact
@@ -214,11 +463,51 @@
 
                 </div>
 
-                <div class="controlRow">
 
-                    <strong>
+                <div>
+
+                    <b>
+                        E / ENTER
+                    </b>
+
+                    <span>
+                        Interact
+                    </span>
+
+                </div>
+
+
+                <div>
+
+                    <b>
+                        SPACE
+                    </b>
+
+                    <span>
+                        Jump
+                    </span>
+
+                </div>
+
+
+                <div>
+
+                    <b>
+                        C
+                    </b>
+
+                    <span>
+                        Crouch
+                    </span>
+
+                </div>
+
+
+                <div>
+
+                    <b>
                         F
-                    </strong>
+                    </b>
 
                     <span>
                         Flashlight
@@ -226,11 +515,38 @@
 
                 </div>
 
-                <div class="controlRow">
 
-                    <strong>
+                <div>
+
+                    <b>
+                        R
+                    </b>
+
+                    <span>
+                        Reload
+                    </span>
+
+                </div>
+
+
+                <div>
+
+                    <b>
+                        1 / 2 / 3
+                    </b>
+
+                    <span>
+                        Weapons
+                    </span>
+
+                </div>
+
+
+                <div>
+
+                    <b>
                         ESC
-                    </strong>
+                    </b>
 
                     <span>
                         Pause
@@ -238,13 +554,115 @@
 
                 </div>
 
+
             </div>
 
-        </section>
 
-    </main>
+            <div class="mobileHelp">
 
-    <script src="game.js"></script>
+                <h3>
+                    MOBILE
+                </h3>
+
+                <p>
+
+                    Left joystick =
+                    movement
+
+                    <br>
+
+                    Right side =
+                    camera look
+
+                    <br>
+
+                    Buttons =
+                    actions
+
+                </p>
+
+            </div>
+
+
+            <button
+                id="close"
+                class="menuButton"
+            >
+
+                CLOSE
+
+            </button>
+
+
+        </div>
+
+    </section>
+
+
+
+    <!-- =====================================================
+         GAME OVER / WIN SCREEN
+    ====================================================== -->
+
+    <section
+        id="over"
+        class="screen hidden"
+    >
+
+        <div class="panel">
+
+
+            <div class="subtitle">
+
+                THE LAST ROOM
+
+            </div>
+
+
+            <h2
+                id="overTitle"
+            >
+
+                YOU DIED
+
+            </h2>
+
+
+            <p
+                id="overText"
+            >
+
+                The infected found you.
+
+            </p>
+
+
+            <button
+                id="again"
+                class="menuButton"
+            >
+
+                TRY AGAIN
+
+            </button>
+
+
+        </div>
+
+    </section>
+
+
+</div>
+
+
+<!-- =========================================================
+     JAVASCRIPT
+========================================================= -->
+
+<script
+    src="game.js"
+></script>
+
 
 </body>
 
