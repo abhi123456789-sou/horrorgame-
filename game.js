@@ -917,6 +917,8 @@ function findDoor() {
                 player.y;
 
             const distance =
+
+               
                 Math.hypot(
                     dx,
                     dy
