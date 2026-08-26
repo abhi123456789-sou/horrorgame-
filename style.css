@@ -1,8 +1,20 @@
+/* =========================================================
+   THE LAST ROOM
+   COMPLETE STYLE.CSS
+   PC + MOBILE RESPONSIVE
+========================================================= */
+
+
+/* =========================================================
+   GLOBAL RESET
+========================================================= */
+
 * {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
 }
+
 
 html,
 body {
@@ -12,22 +24,32 @@ body {
 
     background: #000;
 
+    color: #ffffff;
+
     font-family:
         Arial,
         Helvetica,
         sans-serif;
+
+    user-select: none;
+
+    -webkit-user-select: none;
+
+    -webkit-touch-callout: none;
+
+    touch-action: none;
 }
 
-body {
-    color: #ddd;
-}
 
-button {
-    font-family: inherit;
-}
+/* =========================================================
+   GAME CONTAINER
+========================================================= */
 
 #game {
-    position: relative;
+
+    position: fixed;
+
+    inset: 0;
 
     width: 100vw;
     height: 100vh;
@@ -35,81 +57,47 @@ button {
     overflow: hidden;
 
     background: #000;
+
 }
 
 
-/* =========================
+/* =========================================================
    CANVAS
-========================= */
+========================================================= */
 
 #gameCanvas {
 
     position: absolute;
 
-    inset: 0;
+    left: 0;
+    top: 0;
 
     width: 100%;
     height: 100%;
 
     display: block;
 
-    background: #050505;
+    background: #000;
+
+    cursor: crosshair;
+
 }
 
 
-/* =========================
-   HUD
-========================= */
+/* =========================================================
+   COMMON HIDDEN
+========================================================= */
 
-#hud {
+.hidden {
 
-    position: absolute;
+    display: none !important;
 
-    inset: 0;
-
-    pointer-events: none;
-
-    z-index: 5;
 }
 
 
-#gameTitle {
-
-    position: absolute;
-
-    top: 28px;
-    left: 34px;
-
-    color:
-        rgba(210, 210, 210, 0.55);
-
-    font-size: 16px;
-
-    letter-spacing: 6px;
-
-    font-weight: 400;
-}
-
-
-#objective {
-
-    position: absolute;
-
-    top: 62px;
-    left: 35px;
-
-    color:
-        rgba(170, 170, 170, 0.42);
-
-    font-size: 11px;
-
-    letter-spacing: 2px;
-}
-
-
-/* =========================
+/* =========================================================
    CROSSHAIR
-========================= */
+========================================================= */
 
 #crosshair {
 
@@ -118,624 +106,1548 @@ button {
     left: 50%;
     top: 50%;
 
-    width: 20px;
-    height: 20px;
+    width: 22px;
+    height: 22px;
 
     transform:
-        translate(-50%, -50%);
-}
+        translate(
+            -50%,
+            -50%
+        );
 
+    z-index: 20;
 
-#crosshair::before,
-#crosshair::after,
-#crosshair span::before,
-#crosshair span::after {
+    pointer-events: none;
 
-    content: "";
-
-    position: absolute;
-
-    background:
-        rgba(255, 255, 255, 0.65);
-
-    box-shadow:
-        0 0 4px #000;
 }
 
 
 #crosshair::before {
 
-    width: 1px;
-    height: 7px;
+    content: "";
 
-    left: 9px;
+    position: absolute;
+
+    left: 50%;
     top: 0;
+
+    width: 1px;
+    height: 22px;
+
+    transform:
+        translateX(-50%);
+
+    background:
+        rgba(
+            255,
+            255,
+            255,
+            0.85
+        );
+
 }
 
 
 #crosshair::after {
 
-    width: 1px;
-    height: 7px;
+    content: "";
 
-    left: 9px;
-    bottom: 0;
-}
+    position: absolute;
 
-
-#crosshair span::before {
-
-    width: 7px;
-    height: 1px;
-
-    top: 9px;
+    top: 50%;
     left: 0;
-}
 
-
-#crosshair span::after {
-
-    width: 7px;
+    width: 22px;
     height: 1px;
 
-    top: 9px;
-    right: 0;
+    transform:
+        translateY(-50%);
+
+    background:
+        rgba(
+            255,
+            255,
+            255,
+            0.85
+        );
+
 }
 
 
-/* =========================
-   INTERACTION
-========================= */
-
-#interaction {
+#crosshair span {
 
     position: absolute;
 
     left: 50%;
-    bottom: 145px;
+    top: 50%;
+
+    width: 3px;
+    height: 3px;
 
     transform:
-        translateX(-50%);
+        translate(
+            -50%,
+            -50%
+        );
 
-    text-align: center;
+    border-radius: 50%;
 
-    opacity: 0;
+    background: #ffffff;
 
-    transition:
-        opacity 0.2s ease;
 }
 
 
-#interaction.visible {
+/* =========================================================
+   HUD
+========================================================= */
 
-    opacity: 1;
-}
-
-
-#interactionMain {
-
-    color: #ddd;
-
-    font-size: 13px;
-
-    letter-spacing: 2px;
-
-    text-shadow:
-        0 0 8px #000;
-}
-
-
-#interactionSub {
-
-    margin-top: 8px;
-
-    color: #777;
-
-    font-size: 10px;
-
-    letter-spacing: 1px;
-}
-
-
-/* =========================
-   FLASHLIGHT BATTERY
-========================= */
-
-#status {
+#hud {
 
     position: absolute;
 
-    right: 32px;
-    bottom: 30px;
+    inset: 0;
 
-    width: 150px;
+    z-index: 10;
 
-    color:
-        rgba(190, 190, 190, 0.5);
+    pointer-events: none;
 
-    font-size: 9px;
+    text-shadow:
+        0 2px 5px #000,
+        0 0 8px #000;
 
-    letter-spacing: 2px;
 }
 
 
-#batteryBar {
+/* =========================================================
+   HEALTH
+========================================================= */
+
+#health {
+
+    position: absolute;
+
+    top: 18px;
+    left: 18px;
+
+    width: 220px;
+
+}
+
+
+.hudTitle {
+
+    font-size: 11px;
+
+    font-weight: bold;
+
+    letter-spacing: 3px;
+
+    color: #bbbbbb;
+
+    margin-bottom: 6px;
+
+}
+
+
+.bar {
 
     width: 100%;
 
-    height: 3px;
-
-    margin-top: 7px;
+    height: 10px;
 
     background:
-        rgba(255, 255, 255, 0.08);
+        rgba(
+            255,
+            255,
+            255,
+            0.08
+        );
+
+    border:
+        1px solid
+        rgba(
+            255,
+            255,
+            255,
+            0.25
+        );
+
+    overflow: hidden;
+
 }
 
 
-#batteryFill {
+.healthFill {
 
     width: 100%;
 
     height: 100%;
 
-    background: #aaa;
+    background:
+        linear-gradient(
+            90deg,
+            #650000,
+            #d00000
+        );
 
     transition:
-        width 0.25s linear,
-        background 0.25s;
+        width 0.15s linear;
+
 }
 
 
-/* =========================
+.hudValue {
+
+    margin-top: 4px;
+
+    font-size: 11px;
+
+    color: #aaa;
+
+}
+
+
+/* =========================================================
+   BATTERY
+========================================================= */
+
+#battery {
+
+    position: absolute;
+
+    top: 18px;
+    right: 18px;
+
+    width: 220px;
+
+    text-align: right;
+
+}
+
+
+#battery .bar {
+
+    margin-left: auto;
+
+}
+
+
+.batteryFill {
+
+    width: 100%;
+
+    height: 100%;
+
+    background:
+        linear-gradient(
+            90deg,
+            #555,
+            #eeeeee
+        );
+
+    transition:
+        width 0.15s linear;
+
+}
+
+
+/* =========================================================
+   LOW BATTERY
+========================================================= */
+
+body.lowBattery
+#batteryFill {
+
+    background:
+        linear-gradient(
+            90deg,
+            #7a0000,
+            #ff0000
+        );
+
+}
+
+
+body.lowBattery
+#battery {
+
+    animation:
+        batteryWarning
+        0.7s
+        infinite alternate;
+
+}
+
+
+@keyframes batteryWarning {
+
+    from {
+
+        opacity: 1;
+
+    }
+
+    to {
+
+        opacity: 0.45;
+
+    }
+
+}
+
+
+/* =========================================================
+   OBJECTIVE
+========================================================= */
+
+#objective {
+
+    position: absolute;
+
+    left: 50%;
+
+    top: 20px;
+
+    transform:
+        translateX(-50%);
+
+    width: max-content;
+
+    max-width: 80vw;
+
+    text-align: center;
+
+    font-size: 12px;
+
+    font-weight: bold;
+
+    letter-spacing: 2px;
+
+    text-transform: uppercase;
+
+    color: #d5d5d5;
+
+}
+
+
+/* =========================================================
+   WEAPON HUD
+========================================================= */
+
+#weapon {
+
+    position: absolute;
+
+    right: 22px;
+
+    bottom: 20px;
+
+    min-width: 180px;
+
+    text-align: right;
+
+}
+
+
+#weaponName {
+
+    font-size: 13px;
+
+    font-weight: bold;
+
+    letter-spacing: 4px;
+
+    color: #ddd;
+
+}
+
+
+#ammo {
+
+    margin-top: 3px;
+
+    font-size: 28px;
+
+    font-weight: bold;
+
+    letter-spacing: 2px;
+
+    color: #fff;
+
+}
+
+
+/* =========================================================
    MESSAGE
-========================= */
+========================================================= */
 
 #message {
 
     position: absolute;
 
     left: 50%;
-    bottom: 55px;
 
-    width: 90%;
+    top: 75px;
 
     transform:
-        translateX(-50%);
+        translateX(-50%)
+        translateY(-10px);
+
+    width: min(
+        600px,
+        90vw
+    );
 
     text-align: center;
-
-    color:
-        rgba(205, 205, 205, 0.75);
-
-    font-size: 14px;
-
-    letter-spacing: 1px;
-
-    text-shadow:
-        0 0 8px #000;
 
     opacity: 0;
 
     transition:
-        opacity 0.4s ease;
+        opacity 0.25s ease,
+        transform 0.25s ease;
+
 }
 
 
-#message.visible {
+#message.on {
 
     opacity: 1;
+
+    transform:
+        translateX(-50%)
+        translateY(0);
+
 }
 
 
-#message span {
+#message small {
 
     display: block;
 
-    margin-top: 9px;
-
-    color:
-        rgba(130, 130, 130, 0.65);
+    margin-top: 6px;
 
     font-size: 11px;
+
+    color: #aaa;
+
+    letter-spacing: 1px;
+
 }
 
 
-/* =========================
-   VIGNETTE
-========================= */
+/* =========================================================
+   INTERACTION
+========================================================= */
 
-#vignette {
+#interaction {
+
+    position: absolute;
+
+    left: 50%;
+
+    bottom: 13%;
+
+    transform:
+        translateX(-50%)
+        translateY(10px);
+
+    text-align: center;
+
+    opacity: 0;
+
+    transition:
+        opacity 0.2s ease,
+        transform 0.2s ease;
+
+}
+
+
+#interaction.on {
+
+    opacity: 1;
+
+    transform:
+        translateX(-50%)
+        translateY(0);
+
+}
+
+
+#interactionMain {
+
+    font-size: 16px;
+
+    font-weight: bold;
+
+    letter-spacing: 3px;
+
+}
+
+
+#interactionSub {
+
+    display: block;
+
+    margin-top: 6px;
+
+    color: #999;
+
+    font-size: 11px;
+
+}
+
+
+/* =========================================================
+   MENU / SCREEN
+========================================================= */
+
+.screen {
 
     position: absolute;
 
     inset: 0;
 
-    background:
-        radial-gradient(
-            ellipse at center,
-            transparent 18%,
-            rgba(0, 0, 0, 0.08) 42%,
-            rgba(0, 0, 0, 0.48) 72%,
-            rgba(0, 0, 0, 0.88) 100%
-        );
-
-    pointer-events: none;
-}
-
-
-/* =========================
-   NOISE
-========================= */
-
-#noise {
-
-    position: absolute;
-
-    inset: 0;
-
-    opacity: 0.035;
-
-    background:
-        repeating-linear-gradient(
-            0deg,
-            transparent 0px,
-            transparent 2px,
-            rgba(255,255,255,0.8) 3px
-        );
-
-    mix-blend-mode: screen;
-}
-
-
-/* =========================
-   MENUS
-========================= */
-
-.menu {
-
-    position: absolute;
-
-    inset: 0;
-
-    z-index: 20;
+    z-index: 50;
 
     display: flex;
 
     align-items: center;
+
     justify-content: center;
+
+    padding: 20px;
 
     background:
         radial-gradient(
             circle at center,
-            rgba(30,30,30,0.45),
-            rgba(0,0,0,0.98) 70%
+            rgba(
+                35,
+                35,
+                35,
+                0.55
+            ),
+            rgba(
+                0,
+                0,
+                0,
+                0.94
+            )
         );
 
-    transition:
-        opacity 0.8s ease;
 }
 
 
-.menu.hidden {
-
-    display: none;
-}
-
-
-.menuContent {
+.panel {
 
     width:
-        min(650px, 90vw);
+        min(
+            560px,
+            92vw
+        );
+
+    max-height: 92vh;
+
+    overflow-y: auto;
+
+    padding: 42px;
 
     text-align: center;
+
+    background:
+        rgba(
+            5,
+            5,
+            5,
+            0.95
+        );
+
+    border:
+        1px solid
+        rgba(
+            255,
+            255,
+            255,
+            0.18
+        );
+
+    box-shadow:
+        0 30px 100px
+        rgba(
+            0,
+            0,
+            0,
+            0.9
+        );
+
 }
 
 
-.eyebrow {
+.subtitle {
 
-    margin-bottom: 22px;
-
-    color: #555;
+    margin-bottom: 10px;
 
     font-size: 10px;
 
+    font-weight: bold;
+
     letter-spacing: 5px;
+
+    color: #888;
+
 }
 
 
-.menu h1 {
+.panel h1 {
 
-    color: #ddd;
+    margin: 8px 0 16px;
 
     font-size:
-        clamp(38px, 7vw, 76px);
+        clamp(
+            36px,
+            7vw,
+            72px
+        );
 
-    font-weight: 300;
+    line-height: 0.95;
 
-    letter-spacing: 15px;
+    letter-spacing: 8px;
 
-    margin-left: 15px;
+    color: #f2f2f2;
 
-    text-shadow:
-        0 0 30px
-        rgba(255,255,255,0.05);
 }
 
 
-.menu h2 {
+.panel h2 {
 
-    color: #ddd;
+    margin-bottom: 20px;
 
-    font-size: 32px;
+    font-size: 34px;
 
-    font-weight: 300;
+    letter-spacing: 6px;
 
-    letter-spacing: 9px;
 }
 
 
-.menuDescription {
+.panel h3 {
 
-    margin-top: 28px;
+    margin-top: 20px;
 
-    margin-bottom: 40px;
+    margin-bottom: 10px;
 
-    color: #555;
+    letter-spacing: 3px;
 
-    font-size: 12px;
-
-    line-height: 2;
-
-    letter-spacing: 1px;
 }
 
 
-/* =========================
+.panel p {
+
+    margin-bottom: 24px;
+
+    color: #999;
+
+    line-height: 1.6;
+
+    font-size: 14px;
+
+}
+
+
+/* =========================================================
    BUTTONS
-========================= */
+========================================================= */
+
+button {
+
+    font-family: inherit;
+
+    border: none;
+
+    outline: none;
+
+}
+
 
 .menuButton {
 
     display: block;
 
-    width: 190px;
+    width: 100%;
 
-    margin: 12px auto;
+    min-height: 48px;
 
-    padding: 14px 25px;
+    margin-top: 10px;
 
-    background: transparent;
+    padding:
+        12px
+        18px;
+
+    background: #e8e8e8;
+
+    color: #050505;
 
     border:
-        1px solid #444;
+        1px solid
+        #fff;
 
-    color: #aaa;
+    font-size: 12px;
+
+    font-weight: bold;
+
+    letter-spacing: 3px;
 
     cursor: pointer;
 
-    font-size: 11px;
-
-    letter-spacing: 4px;
-
     transition:
-        0.25s ease;
+        background 0.15s ease,
+        color 0.15s ease,
+        transform 0.15s ease;
+
 }
 
 
 .menuButton:hover {
 
-    color: #fff;
+    background: #fff;
 
-    border-color: #aaa;
+    transform:
+        translateY(-1px);
 
-    box-shadow:
-        0 0 25px
-        rgba(255,255,255,0.08);
+}
+
+
+.menuButton:active {
+
+    transform:
+        translateY(1px);
+
 }
 
 
 .menuButton.secondary {
 
+    background:
+        rgba(
+            20,
+            20,
+            20,
+            0.95
+        );
+
+    color: #ddd;
+
+    border-color:
+        #444;
+
+}
+
+
+.menuButton.secondary:hover {
+
+    background: #222;
+
+    border-color: #777;
+
+}
+
+
+/* =========================================================
+   CONTROLS PANEL
+========================================================= */
+
+.controlsPanel {
+
+    max-width: 650px;
+
+}
+
+
+.controlList {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            2,
+            minmax(
+                0,
+                1fr
+            )
+        );
+
+    gap: 8px;
+
+    margin-bottom: 20px;
+
+}
+
+
+.controlList div {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    gap: 12px;
+
+    padding:
+        11px
+        12px;
+
+    background:
+        rgba(
+            255,
+            255,
+            255,
+            0.035
+        );
+
+    border:
+        1px solid
+        rgba(
+            255,
+            255,
+            255,
+            0.08
+        );
+
+}
+
+
+.controlList b {
+
+    color: #eee;
+
+    font-size: 11px;
+
+}
+
+
+.controlList span {
+
     color: #777;
 
-    border-color: #292929;
+    font-size: 11px;
+
 }
 
 
-.textButton {
+.mobileHelp {
 
-    margin-top: 22px;
+    padding:
+        10px
+        15px;
 
-    background: none;
+    margin-top: 10px;
 
-    border: none;
+    border-top:
+        1px solid
+        #222;
 
-    color: #555;
-
-    cursor: pointer;
-
-    font-size: 10px;
-
-    letter-spacing: 3px;
-
-    transition:
-        color 0.2s;
 }
 
 
-.textButton:hover {
+/* =========================================================
+   MOBILE CONTROLS CONTAINER
+========================================================= */
 
-    color: #aaa;
-}
+#mobile {
 
-
-/* =========================
-   CONTROLS PANEL
-========================= */
-
-.panel {
+    display: none;
 
     position: absolute;
 
     inset: 0;
 
-    z-index: 30;
+    z-index: 40;
 
-    display: flex;
+    pointer-events: none;
 
-    align-items: center;
-    justify-content: center;
-
-    background:
-        rgba(0,0,0,0.88);
 }
 
 
-.panel.hidden {
+/* =========================================================
+   VIRTUAL JOYSTICK
+========================================================= */
 
-    display: none;
-}
-
-
-.controlsBox {
-
-    position: relative;
-
-    width:
-        min(500px, 90vw);
-
-    padding: 50px;
-
-    border:
-        1px solid
-        rgba(255,255,255,0.12);
-
-    background:
-        rgba(10,10,10,0.96);
-
-    box-shadow:
-        0 20px 80px
-        rgba(0,0,0,0.8);
-}
-
-
-.controlsBox h2 {
-
-    margin-bottom: 30px;
-
-    color: #ddd;
-
-    font-size: 22px;
-
-    font-weight: 300;
-
-    letter-spacing: 7px;
-}
-
-
-.controlRow {
-
-    display: flex;
-
-    justify-content:
-        space-between;
-
-    padding: 15px 0;
-
-    border-bottom:
-        1px solid
-        rgba(255,255,255,0.06);
-
-    color: #777;
-
-    font-size: 12px;
-
-    letter-spacing: 1px;
-}
-
-
-.controlRow strong {
-
-    color: #bbb;
-
-    letter-spacing: 3px;
-}
-
-
-.closeButton {
+#joy {
 
     position: absolute;
 
-    top: 15px;
-    right: 18px;
+    left: 20px;
 
-    background: none;
+    bottom: 22px;
 
-    border: none;
+    width: 130px;
+    height: 130px;
 
-    color: #666;
+    border-radius: 50%;
 
-    font-size: 28px;
+    background:
+        rgba(
+            0,
+            0,
+            0,
+            0.35
+        );
 
-    cursor: pointer;
+    border:
+        2px solid
+        rgba(
+            255,
+            255,
+            255,
+            0.25
+        );
+
+    box-shadow:
+        inset
+        0 0 25px
+        rgba(
+            255,
+            255,
+            255,
+            0.03
+        );
+
+    pointer-events: auto;
+
+    touch-action: none;
+
 }
 
 
-.closeButton:hover {
+#knob {
+
+    position: absolute;
+
+    left: 50%;
+    top: 50%;
+
+    width: 54px;
+    height: 54px;
+
+    margin-left: -27px;
+    margin-top: -27px;
+
+    border-radius: 50%;
+
+    background:
+        rgba(
+            210,
+            210,
+            210,
+            0.25
+        );
+
+    border:
+        1px solid
+        rgba(
+            255,
+            255,
+            255,
+            0.45
+        );
+
+    box-shadow:
+        0 5px 20px
+        rgba(
+            0,
+            0,
+            0,
+            0.5
+        );
+
+    transition:
+        transform 0.05s linear;
+
+}
+
+
+/* =========================================================
+   MOBILE CAMERA AREA
+========================================================= */
+
+#look {
+
+    position: absolute;
+
+    top: 0;
+
+    right: 0;
+
+    width: 58%;
+
+    height: 100%;
+
+    pointer-events: auto;
+
+    touch-action: none;
+
+}
+
+
+/* =========================================================
+   MOBILE BUTTONS
+========================================================= */
+
+#buttons {
+
+    position: absolute;
+
+    right: 12px;
+
+    bottom: 15px;
+
+    width: 190px;
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            3,
+            1fr
+        );
+
+    gap: 7px;
+
+    pointer-events: auto;
+
+}
+
+
+.mobileButton {
+
+    min-width: 0;
+
+    height: 48px;
+
+    padding: 0;
+
+    margin: 0;
+
+    border-radius: 10px;
+
+    border:
+        1px solid
+        rgba(
+            255,
+            255,
+            255,
+            0.3
+        );
+
+    background:
+        rgba(
+            10,
+            10,
+            10,
+            0.72
+        );
 
     color: #fff;
+
+    font-size: 9px;
+
+    font-weight: bold;
+
+    letter-spacing: 1px;
+
+    -webkit-tap-highlight-color:
+        transparent;
+
+    touch-action: manipulation;
+
 }
 
 
-/* =========================
-   SCREEN SHAKE
-========================= */
+.mobileButton:active {
 
-#game.shake #gameCanvas {
+    background:
+        rgba(
+            255,
+            255,
+            255,
+            0.25
+        );
+
+    transform:
+        scale(0.96);
+
+}
+
+
+.fireButton {
+
+    border-color:
+        rgba(
+            220,
+            40,
+            40,
+            0.8
+        );
+
+    background:
+        rgba(
+            80,
+            0,
+            0,
+            0.7
+        );
+
+}
+
+
+/* =========================================================
+   GAME SHAKE
+========================================================= */
+
+.shake {
 
     animation:
-        shake 0.12s linear 4;
+        gameShake
+        0.08s
+        linear
+        6;
+
 }
 
 
-@keyframes shake {
+@keyframes gameShake {
 
     0% {
         transform:
-            translate(0,0);
+            translate(
+                0,
+                0
+            );
     }
 
     25% {
         transform:
-            translate(-4px,2px);
+            translate(
+                4px,
+                -3px
+            );
     }
 
     50% {
         transform:
-            translate(4px,-2px);
+            translate(
+                -4px,
+                3px
+            );
     }
 
     75% {
         transform:
-            translate(-2px,-3px);
+            translate(
+                3px,
+                2px
+            );
     }
 
     100% {
         transform:
-            translate(0,0);
+            translate(
+                0,
+                0
+            );
     }
+
 }
 
 
-/* =========================
-   LOW BATTERY
-========================= */
+/* =========================================================
+   DAMAGE FLASH
+========================================================= */
 
-.lowBattery #batteryFill {
-
-    background: #777;
+#game.damage {
 
     box-shadow:
-        0 0 8px
-        rgba(255,255,255,0.2);
+        inset
+        0 0 100px
+        rgba(
+            180,
+            0,
+            0,
+            0.8
+        );
+
+}
+
+
+/* =========================================================
+   TABLET
+========================================================= */
+
+@media
+    (max-width: 900px) {
+
+    #health,
+    #battery {
+
+        width: 170px;
+
+    }
+
+    .panel {
+
+        padding: 30px;
+
+    }
+
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media
+    (max-width: 800px),
+    (pointer: coarse) {
+
+    #mobile {
+
+        display: block;
+
+    }
+
+
+    #crosshair {
+
+        display: none;
+
+    }
+
+
+    #health {
+
+        top: 12px;
+        left: 12px;
+
+        width: 145px;
+
+    }
+
+
+    #battery {
+
+        top: 12px;
+        right: 12px;
+
+        width: 145px;
+
+    }
+
+
+    .hudTitle {
+
+        font-size: 9px;
+
+        letter-spacing: 2px;
+
+    }
+
+
+    .bar {
+
+        height: 8px;
+
+    }
+
+
+    .hudValue {
+
+        font-size: 9px;
+
+    }
+
+
+    #objective {
+
+        top: 62px;
+
+        width: 90vw;
+
+        font-size: 10px;
+
+        letter-spacing: 1px;
+
+    }
+
+
+    #weapon {
+
+        right: 14px;
+
+        bottom: 190px;
+
+        min-width: 130px;
+
+    }
+
+
+    #weaponName {
+
+        font-size: 10px;
+
+        letter-spacing: 2px;
+
+    }
+
+
+    #ammo {
+
+        font-size: 21px;
+
+    }
+
+
+    #message {
+
+        top: 95px;
+
+        font-size: 13px;
+
+    }
+
+
+    #interaction {
+
+        bottom: 28%;
+
+    }
+
+
+    .panel {
+
+        width: 94vw;
+
+        max-height: 90vh;
+
+        padding: 25px 20px;
+
+    }
+
+
+    .panel h1 {
+
+        font-size:
+            clamp(
+                32px,
+                11vw,
+                58px
+            );
+
+        letter-spacing: 4px;
+
+    }
+
+
+    .panel h2 {
+
+        font-size: 26px;
+
+        letter-spacing: 4px;
+
+    }
+
+
+    .controlList {
+
+        grid-template-columns: 1fr;
+
+    }
+
+
+    .controlList div {
+
+        padding: 9px;
+
+    }
+
+
+    .menuButton {
+
+        min-height: 46px;
+
+    }
+
+}
+
+
+/* =========================================================
+   SMALL PHONES
+========================================================= */
+
+@media
+    (max-width: 480px) {
+
+    #health,
+    #battery {
+
+        width: 125px;
+
+    }
+
+
+    #joy {
+
+        left: 12px;
+
+        bottom: 15px;
+
+        width: 115px;
+        height: 115px;
+
+    }
+
+
+    #knob {
+
+        width: 48px;
+        height: 48px;
+
+        margin-left: -24px;
+        margin-top: -24px;
+
+    }
+
+
+    #buttons {
+
+        right: 8px;
+
+        bottom: 10px;
+
+        width: 170px;
+
+        gap: 5px;
+
+    }
+
+
+    .mobileButton {
+
+        height: 44px;
+
+        font-size: 8px;
+
+    }
+
+
+    #weapon {
+
+        bottom: 175px;
+
+    }
+
+
+    #interaction {
+
+        bottom: 32%;
+
+    }
+
+}
+
+
+/* =========================================================
+   LANDSCAPE MOBILE
+========================================================= */
+
+@media
+    (max-height: 500px)
+    and
+    (orientation: landscape) {
+
+    #health,
+    #battery {
+
+        top: 8px;
+
+    }
+
+
+    #objective {
+
+        top: 10px;
+
+    }
+
+
+    #weapon {
+
+        bottom: 10px;
+
+    }
+
+
+    #joy {
+
+        width: 100px;
+        height: 100px;
+
+        bottom: 10px;
+
+    }
+
+
+    #buttons {
+
+        bottom: 8px;
+
+        width: 175px;
+
+    }
+
+
+    .mobileButton {
+
+        height: 38px;
+
+    }
+
+
+    .panel {
+
+        padding: 18px;
+
+    }
+
+
+    .panel h1 {
+
+        font-size: 34px;
+
+    }
+
+
+    .panel p {
+
+        margin-bottom: 10px;
+
+    }
+
+}
+
+
+/* =========================================================
+   REDUCED MOTION
+========================================================= */
+
+@media
+    (prefers-reduced-motion: reduce) {
+
+    * {
+
+        animation-duration: 0.001ms !important;
+
+        animation-iteration-count: 1 !important;
+
+        transition-duration: 0.001ms !important;
+
+    }
+
 }
