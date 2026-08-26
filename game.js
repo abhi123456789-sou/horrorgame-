@@ -204,10 +204,17 @@ document.addEventListener("pointerlockchange", () => {
     if (document.pointerLockElement !== game) {
 
         message.innerHTML =
-            "The game is paused." +
-            "<span>Click the screen to continue.</span>";
+            "Click anywhere to continue." +
+            "<span>WASD to move • Mouse to look</span>";
+
+    } else {
+
+        message.innerHTML =
+            "You are not alone." +
+            "<span>WASD to move • E to interact • F for flashlight</span>";
     }
 });
+
 
 
 game.addEventListener("click", () => {
