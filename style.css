@@ -1,12 +1,12 @@
 /* =========================================================
    THE LAST ROOM
    COMPLETE STYLE.CSS
-   PC + MOBILE RESPONSIVE
+   PART 1 → PART 4
+   PC + MOBILE
 ========================================================= */
 
-
 /* =========================================================
-   GLOBAL RESET
+   RESET
 ========================================================= */
 
 * {
@@ -16,63 +16,56 @@
     -webkit-tap-highlight-color: transparent;
 }
 
-
 html,
 body {
     width: 100%;
     height: 100%;
     overflow: hidden;
-}
-
-
-body {
     background: #000;
     color: #fff;
     font-family:
         Arial,
         Helvetica,
         sans-serif;
-
-    touch-action: none;
-    user-select: none;
 }
 
+body {
+    user-select: none;
+    touch-action: none;
+}
 
 /* =========================================================
-   GAME CONTAINER
+   GAME ROOT
+========================================================= */
+
+#game {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    background: #000;
+}
+
+/* =========================================================
+   THREE.JS CONTAINER
 ========================================================= */
 
 #gameContainer {
-    position: fixed;
-
-    left: 0;
-    top: 0;
-
-    width: 100vw;
-    height: 100vh;
-
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
     overflow: hidden;
-
+    background: #000;
     z-index: 1;
 }
 
-
 #gameContainer canvas {
-    position: absolute;
-
-    left: 0;
-    top: 0;
-
+    display: block;
     width: 100%;
     height: 100%;
-
-    display: block;
-
-    outline: none;
-
-    touch-action: none;
 }
-
 
 /* =========================================================
    CROSSHAIR
@@ -80,416 +73,536 @@ body {
 
 #crosshair {
     position: fixed;
-
     left: 50%;
     top: 50%;
-
-    width: 24px;
-    height: 24px;
-
-    transform:
-        translate(-50%, -50%);
-
+    width: 28px;
+    height: 28px;
+    transform: translate(-50%, -50%);
     z-index: 99999;
-
     pointer-events: none;
-
-    display: block;
-
-    visibility: visible;
-
     opacity: 1;
 }
 
-
-/* Horizontal line */
-
-#crosshair::before {
-    content: "";
-
-    position: absolute;
-
-    left: 3px;
-    top: 11px;
-
-    width: 18px;
-    height: 2px;
-
-    background: rgba(255,255,255,0.95);
-
-    box-shadow:
-        0 0 4px rgba(255,255,255,0.8);
-}
-
-
-/* Vertical line */
-
-#crosshair::after {
-    content: "";
-
-    position: absolute;
-
-    left: 11px;
-    top: 3px;
-
-    width: 2px;
-    height: 18px;
-
-    background: rgba(255,255,255,0.95);
-
-    box-shadow:
-        0 0 4px rgba(255,255,255,0.8);
-}
-
-
-/* Center dot */
-
 #crosshair span {
     position: absolute;
-
-    left: 9px;
-    top: 9px;
-
-    width: 6px;
-    height: 6px;
-
-    border-radius: 50%;
-
-    background: #fff;
-
-    box-shadow:
-        0 0 5px #fff;
+    display: block;
+    background: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 0 4px rgba(0, 0, 0, 0.9);
 }
 
+#crosshair span:nth-child(1) {
+    width: 2px;
+    height: 8px;
+    left: 13px;
+    top: 0;
+}
+
+#crosshair span:nth-child(2) {
+    width: 2px;
+    height: 8px;
+    left: 13px;
+    bottom: 0;
+}
+
+#crosshair span:nth-child(3) {
+    width: 8px;
+    height: 2px;
+    left: 0;
+    top: 13px;
+}
+
+#crosshair span:nth-child(4) {
+    width: 8px;
+    height: 2px;
+    right: 0;
+    top: 13px;
+}
 
 /* =========================================================
-   LOADING / START SCREEN
+   SCREEN / OVERLAYS
 ========================================================= */
 
-#loadingScreen {
-    position: fixed;
-
+.screen {
+    position: absolute;
     inset: 0;
-
-    z-index: 100000;
+    z-index: 5000;
 
     display: flex;
-
     align-items: center;
     justify-content: center;
+
+    padding: 20px;
 
     background:
         radial-gradient(
             circle at center,
-            rgba(40,40,45,0.65),
-            rgba(0,0,0,0.98)
+            rgba(35, 35, 35, 0.25),
+            rgba(0, 0, 0, 0.96) 75%
         );
 
-    backdrop-filter:
-        blur(3px);
+    backdrop-filter: blur(3px);
 }
 
+.hidden {
+    display: none !important;
+}
 
-#startPanel {
-    width: min(90vw, 520px);
+/* =========================================================
+   MENU BOX
+========================================================= */
 
-    padding: 45px 35px;
+.menuBox {
+    width: min(560px, 94vw);
+    max-height: 92vh;
+    overflow-y: auto;
+
+    padding: 42px 38px;
 
     text-align: center;
 
-    border:
-        1px solid
-        rgba(255,255,255,0.16);
-
     background:
-        rgba(5,5,7,0.88);
+        linear-gradient(
+            180deg,
+            rgba(12, 12, 12, 0.96),
+            rgba(3, 3, 3, 0.98)
+        );
+
+    border: 1px solid rgba(255, 255, 255, 0.14);
 
     box-shadow:
-        0 0 50px
-        rgba(0,0,0,0.8);
-
-    border-radius: 8px;
+        0 0 60px rgba(0, 0, 0, 0.95),
+        inset 0 0 30px rgba(255, 255, 255, 0.025);
 }
 
+.smallTitle {
+    margin-bottom: 12px;
 
-#startPanel h1 {
-    font-size: clamp(
-        32px,
-        6vw,
-        60px
-    );
-
-    letter-spacing: 8px;
-
+    font-size: 12px;
     font-weight: 700;
+    letter-spacing: 5px;
+    text-transform: uppercase;
 
-    margin-bottom: 14px;
-
-    text-shadow:
-        0 0 20px
-        rgba(255,255,255,0.25);
+    color: rgba(255, 255, 255, 0.5);
 }
 
+.menuBox h1 {
+    margin-bottom: 20px;
 
-.subtitle {
-    color:
-        rgba(255,255,255,0.65);
-
-    font-size: 15px;
-
-    margin-bottom: 32px;
-
-    letter-spacing: 2px;
-}
-
-
-/* =========================================================
-   START BUTTON
-========================================================= */
-
-#startButton {
-    width: 100%;
-
-    padding: 16px 22px;
-
-    border: 1px solid
-        rgba(255,255,255,0.4);
-
-    border-radius: 4px;
-
-    background:
-        rgba(255,255,255,0.08);
+    font-size: clamp(36px, 7vw, 68px);
+    line-height: 0.95;
+    letter-spacing: 7px;
 
     color: #fff;
 
-    font-size: 15px;
+    text-shadow:
+        0 0 10px rgba(255, 255, 255, 0.08),
+        0 0 35px rgba(0, 0, 0, 1);
+}
 
+.menuBox h2 {
+    margin-bottom: 18px;
+
+    font-size: clamp(25px, 5vw, 40px);
+    letter-spacing: 4px;
+}
+
+.menuText {
+    margin: 0 auto 30px;
+
+    max-width: 430px;
+
+    font-size: 15px;
+    line-height: 1.8;
+
+    color: rgba(255, 255, 255, 0.62);
+}
+
+/* =========================================================
+   MENU BUTTONS
+========================================================= */
+
+.menuButton {
+    display: block;
+
+    width: 100%;
+    min-height: 52px;
+
+    margin-top: 12px;
+
+    padding: 14px 20px;
+
+    border: 1px solid rgba(255, 255, 255, 0.28);
+
+    background:
+        linear-gradient(
+            180deg,
+            rgba(255, 255, 255, 0.08),
+            rgba(255, 255, 255, 0.025)
+        );
+
+    color: #fff;
+
+    font-size: 13px;
+    font-weight: 700;
     letter-spacing: 3px;
 
     cursor: pointer;
 
     transition:
         background 0.2s ease,
-        transform 0.2s ease,
-        border-color 0.2s ease;
+        border-color 0.2s ease,
+        transform 0.15s ease;
 }
 
-
-#startButton:hover {
-    background:
-        rgba(255,255,255,0.18);
-
-    border-color:
-        rgba(255,255,255,0.75);
-
-    transform:
-        translateY(-2px);
+.menuButton:hover {
+    background: rgba(255, 255, 255, 0.13);
+    border-color: rgba(255, 255, 255, 0.55);
 }
 
-
-#startButton:active {
-    transform:
-        translateY(0);
+.menuButton:active {
+    transform: scale(0.98);
 }
 
+.menuButton.secondary {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.menuButton.danger {
+    border-color: rgba(170, 30, 30, 0.5);
+}
+
+.menuButton.danger:hover {
+    background: rgba(130, 0, 0, 0.2);
+}
 
 /* =========================================================
-   PC CONTROLS INFO
+   HUD
 ========================================================= */
 
-.controls-info {
-    margin-top: 28px;
+#hud {
+    position: absolute;
+    inset: 0;
 
-    color:
-        rgba(255,255,255,0.45);
+    z-index: 1000;
 
-    font-size: 12px;
+    pointer-events: none;
 
-    line-height: 1.8;
-
-    letter-spacing: 1px;
+    font-size: 13px;
 }
 
+/* =========================================================
+   OBJECTIVE
+========================================================= */
 
-.controls-info strong {
-    color:
-        rgba(255,255,255,0.8);
+#objectiveBox {
+    position: absolute;
 
+    top: 25px;
+    left: 25px;
+
+    width: min(360px, 42vw);
+
+    padding: 14px 16px;
+
+    background: rgba(0, 0, 0, 0.5);
+
+    border-left: 2px solid rgba(255, 255, 255, 0.5);
+
+    text-shadow: 0 1px 5px #000;
+}
+
+.hudLabel {
+    margin-bottom: 5px;
+
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 3px;
+
+    color: rgba(255, 255, 255, 0.45);
+    text-transform: uppercase;
+}
+
+#objective {
+    font-size: 14px;
+    line-height: 1.45;
+    color: #fff;
+}
+
+/* =========================================================
+   HEALTH
+========================================================= */
+
+#healthContainer {
+    position: absolute;
+
+    left: 25px;
+    bottom: 25px;
+
+    width: 230px;
+
+    padding: 10px 12px;
+
+    background: rgba(0, 0, 0, 0.6);
+
+    border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+#healthContainer .bar,
+#batteryContainer .bar {
+    position: relative;
+
+    width: 100%;
+    height: 9px;
+
+    overflow: hidden;
+
+    background: rgba(255, 255, 255, 0.1);
+
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+#playerHealthFill {
+    position: absolute;
+    inset: 0 auto 0 0;
+
+    width: 100%;
+
+    background: #b00000;
+
+    transition: width 0.15s linear;
+}
+
+#healthText {
+    position: absolute;
+
+    right: 12px;
+    bottom: 8px;
+
+    font-size: 11px;
+    font-weight: 700;
+
+    text-shadow: 0 1px 3px #000;
+}
+
+/* =========================================================
+   BATTERY
+========================================================= */
+
+#batteryContainer {
+    position: absolute;
+
+    right: 25px;
+    bottom: 25px;
+
+    width: 230px;
+
+    padding: 10px 12px;
+
+    background: rgba(0, 0, 0, 0.6);
+
+    border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+#batteryFill {
+    position: absolute;
+    inset: 0 auto 0 0;
+
+    width: 100%;
+
+    background: #ddd;
+
+    transition: width 0.15s linear;
+}
+
+#batteryText {
+    position: absolute;
+
+    right: 12px;
+    bottom: 8px;
+
+    font-size: 11px;
+    font-weight: 700;
+
+    color: #fff;
+
+    text-shadow: 0 1px 3px #000;
+}
+
+/* =========================================================
+   WEAPON HUD
+========================================================= */
+
+#weaponHUD {
+    position: absolute;
+
+    right: 25px;
+    top: 25px;
+
+    min-width: 150px;
+
+    padding: 12px 15px;
+
+    text-align: right;
+
+    background: rgba(0, 0, 0, 0.5);
+
+    border-right: 2px solid rgba(255, 255, 255, 0.5);
+}
+
+#weaponName {
+    margin-bottom: 5px;
+
+    font-size: 13px;
+    font-weight: 700;
     letter-spacing: 3px;
 }
 
+#ammoText {
+    font-size: 22px;
+    font-weight: 700;
+}
 
 /* =========================================================
-   INTERACTION TEXT
+   MESSAGE
 ========================================================= */
 
-#interactionText {
-    position: fixed;
+#message {
+    position: absolute;
 
     left: 50%;
+    bottom: 105px;
 
-    bottom: 18%;
+    width: min(500px, 75vw);
 
-    transform:
-        translateX(-50%);
+    transform: translateX(-50%);
 
-    z-index: 90000;
+    padding: 15px 20px;
 
-    display: none;
+    text-align: center;
 
-    min-width: 120px;
+    background: rgba(0, 0, 0, 0.72);
+
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+
+    opacity: 0;
+
+    transition: opacity 0.25s ease;
+}
+
+#message.visible {
+    opacity: 1;
+}
+
+#messageTitle,
+#messageBody {
+    display: block;
+}
+
+#messageTitle {
+    margin-bottom: 5px;
+
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 2px;
+}
+
+#messageBody {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.62);
+}
+
+/* =========================================================
+   INTERACTION
+========================================================= */
+
+#interaction {
+    position: absolute;
+
+    left: 50%;
+    bottom: 42px;
+
+    transform: translateX(-50%);
+
+    min-width: 180px;
 
     padding: 10px 18px;
 
     text-align: center;
 
-    color: #fff;
+    background: rgba(0, 0, 0, 0.7);
 
-    background:
-        rgba(0,0,0,0.72);
+    border: 1px solid rgba(255, 255, 255, 0.2);
 
-    border:
-        1px solid
-        rgba(255,255,255,0.2);
+    opacity: 0;
 
-    border-radius: 4px;
+    transition: opacity 0.15s ease;
+}
 
+#interaction.visible {
+    opacity: 1;
+}
+
+#interactionMain {
     font-size: 14px;
-
+    font-weight: 700;
     letter-spacing: 2px;
-
-    pointer-events: none;
-
-    text-shadow:
-        0 0 8px #000;
 }
 
-
-/* =========================================================
-   MESSAGE BOX
-========================================================= */
-
-#messageBox {
-    position: fixed;
-
-    left: 50%;
-
-    top: 12%;
-
-    transform:
-        translateX(-50%);
-
-    z-index: 95000;
-
-    display: none;
-
-    max-width: 80vw;
-
-    padding: 14px 25px;
-
-    text-align: center;
-
-    color: #fff;
-
-    background:
-        rgba(0,0,0,0.78);
-
-    border:
-        1px solid
-        rgba(255,255,255,0.18);
-
-    border-radius: 5px;
-
-    font-size: 16px;
-
-    letter-spacing: 1px;
-
-    pointer-events: none;
-
-    box-shadow:
-        0 5px 30px
-        rgba(0,0,0,0.5);
-}
-
-
-/* =========================================================
-   BATTERY UI
-========================================================= */
-
-#batteryContainer {
-    position: fixed;
-
-    right: 25px;
-    bottom: 25px;
-
-    z-index: 80000;
-
-    width: 145px;
-
-    padding: 10px;
-
-    background:
-        rgba(0,0,0,0.55);
-
-    border:
-        1px solid
-        rgba(255,255,255,0.15);
-
-    border-radius: 5px;
-
-    pointer-events: none;
-}
-
-
-#batteryLabel {
-    font-size: 9px;
-
-    letter-spacing: 2px;
-
-    color:
-        rgba(255,255,255,0.6);
-
-    margin-bottom: 6px;
-}
-
-
-#batteryOuter {
-    width: 100%;
-
-    height: 7px;
-
-    background:
-        rgba(255,255,255,0.15);
-
-    border-radius: 2px;
-
-    overflow: hidden;
-}
-
-
-#batteryInner {
-    width: 100%;
-
-    height: 100%;
-
-    background: #fff;
-
-    transition:
-        width 0.2s linear;
-}
-
-
-#batteryPercent {
-    margin-top: 5px;
+#interactionSub {
+    margin-top: 4px;
 
     font-size: 10px;
 
-    color:
-        rgba(255,255,255,0.7);
-
-    text-align: right;
+    color: rgba(255, 255, 255, 0.55);
 }
 
+/* =========================================================
+   CONTROLS PANEL
+========================================================= */
+
+.controlsBox {
+    max-width: 700px;
+}
+
+.controlsGrid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+    gap: 8px;
+
+    margin-bottom: 25px;
+}
+
+.controlsGrid > div {
+    display: flex;
+
+    align-items: center;
+    justify-content: space-between;
+
+    min-height: 42px;
+
+    padding: 8px 12px;
+
+    background: rgba(255, 255, 255, 0.035);
+
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.controlsGrid b {
+    font-size: 11px;
+    letter-spacing: 1px;
+}
+
+.controlsGrid span {
+    margin-left: 10px;
+
+    font-size: 11px;
+
+    color: rgba(255, 255, 255, 0.5);
+}
 
 /* =========================================================
    MOBILE CONTROLS
@@ -497,71 +610,43 @@ body {
 
 #mobileControls {
     position: fixed;
-
     inset: 0;
 
-    z-index: 70000;
+    z-index: 3000;
 
     display: none;
 
     pointer-events: none;
-
-    touch-action: none;
 }
 
-
 /* =========================================================
-   JOYSTICK
+   MOBILE JOYSTICK
 ========================================================= */
 
-#joystick {
+#joystickBase {
     position: absolute;
 
-    left: 35px;
-    bottom: 35px;
+    left: 28px;
+    bottom: 30px;
 
-    width: 135px;
-    height: 135px;
+    width: 125px;
+    height: 125px;
 
     border-radius: 50%;
 
     background:
-        rgba(255,255,255,0.08);
+        radial-gradient(
+            circle,
+            rgba(255, 255, 255, 0.13),
+            rgba(255, 255, 255, 0.035)
+        );
 
-    border:
-        2px solid
-        rgba(255,255,255,0.25);
-
-    box-shadow:
-        inset 0 0 25px
-        rgba(0,0,0,0.4);
+    border: 2px solid rgba(255, 255, 255, 0.2);
 
     pointer-events: auto;
 
     touch-action: none;
 }
-
-
-#joystick::after {
-    content: "";
-
-    position: absolute;
-
-    left: 50%;
-    top: 50%;
-
-    width: 4px;
-    height: 4px;
-
-    transform:
-        translate(-50%, -50%);
-
-    background:
-        rgba(255,255,255,0.25);
-
-    border-radius: 50%;
-}
-
 
 #joystickKnob {
     position: absolute;
@@ -569,505 +654,485 @@ body {
     left: 50%;
     top: 50%;
 
-    width: 62px;
-    height: 62px;
+    width: 52px;
+    height: 52px;
 
-    transform:
-        translate(-50%, -50%);
+    transform: translate(-50%, -50%);
 
     border-radius: 50%;
 
-    background:
-        rgba(255,255,255,0.22);
+    background: rgba(255, 255, 255, 0.2);
 
-    border:
-        2px solid
-        rgba(255,255,255,0.4);
+    border: 2px solid rgba(255, 255, 255, 0.4);
 
-    box-shadow:
-        0 0 20px
-        rgba(0,0,0,0.5);
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
 
     pointer-events: none;
 }
 
-
 /* =========================================================
-   MOBILE BUTTON AREA
+   MOBILE LOOK
 ========================================================= */
 
-#mobileButtons {
+#lookArea {
     position: absolute;
 
-    right: 25px;
-    bottom: 30px;
+    top: 0;
+    right: 0;
 
-    display: flex;
-
-    flex-direction: column;
-
-    gap: 14px;
-
-    align-items: center;
+    width: 58%;
+    height: 72%;
 
     pointer-events: auto;
-}
 
+    touch-action: none;
+}
 
 /* =========================================================
    MOBILE BUTTONS
 ========================================================= */
 
-#mobileButtons button {
-    width: 65px;
-    height: 65px;
+#mobileButtons {
+    position: absolute;
 
-    border-radius: 50%;
+    right: 18px;
+    bottom: 20px;
 
-    border:
-        2px solid
-        rgba(255,255,255,0.28);
+    width: 220px;
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, 1fr);
+
+    gap: 8px;
+
+    pointer-events: auto;
+}
+
+.mobileButton {
+    min-height: 52px;
+
+    border-radius: 10px;
+
+    border: 1px solid rgba(255, 255, 255, 0.28);
 
     background:
-        rgba(0,0,0,0.55);
+        rgba(0, 0, 0, 0.68);
 
     color: #fff;
 
-    font-size: 14px;
-
-    font-weight: bold;
+    font-size: 9px;
+    font-weight: 700;
 
     letter-spacing: 1px;
 
-    cursor: pointer;
-
     touch-action: manipulation;
 
-    display: flex;
-
-    align-items: center;
-    justify-content: center;
-
-    transition:
-        background 0.1s ease,
-        transform 0.1s ease;
+    cursor: pointer;
 }
 
-
-#mobileButtons button:active {
-    background:
-        rgba(255,255,255,0.22);
-
-    transform:
-        scale(0.92);
+.mobileButton:active {
+    background: rgba(255, 255, 255, 0.18);
+    transform: scale(0.95);
 }
 
+.fireButton {
+    grid-column: span 2;
 
-#flashlightButton {
-    font-size: 25px !important;
+    min-height: 62px;
+
+    border-color: rgba(255, 80, 80, 0.45);
+
+    font-size: 12px;
 }
-
 
 /* =========================================================
-   WIN SCREEN
+   DAMAGE EFFECT
 ========================================================= */
 
-#winScreen {
-    position: fixed;
+#game.damageFlash::after {
+    content: "";
 
+    position: absolute;
     inset: 0;
 
-    z-index: 110000;
+    z-index: 900;
 
-    display: none;
-
-    align-items: center;
-    justify-content: center;
+    pointer-events: none;
 
     background:
-        rgba(0,0,0,0.92);
+        radial-gradient(
+            circle,
+            transparent 35%,
+            rgba(150, 0, 0, 0.45)
+        );
 
-    backdrop-filter:
-        blur(8px);
+    animation: damageFlash 0.25s ease-out;
 }
 
+@keyframes damageFlash {
+    0% {
+        opacity: 1;
+    }
 
-.winPanel {
-    width: min(90vw, 500px);
-
-    padding: 50px 35px;
-
-    text-align: center;
-
-    border:
-        1px solid
-        rgba(255,255,255,0.2);
-
-    background:
-        rgba(10,10,10,0.9);
-
-    border-radius: 8px;
+    100% {
+        opacity: 0;
+    }
 }
-
-
-.winPanel h1 {
-    font-size: clamp(
-        32px,
-        7vw,
-        58px
-    );
-
-    letter-spacing: 6px;
-
-    margin-bottom: 15px;
-}
-
-
-.winPanel p {
-    color:
-        rgba(255,255,255,0.65);
-
-    margin-bottom: 30px;
-
-    font-size: 15px;
-}
-
-
-#restartButton {
-    padding: 14px 30px;
-
-    border:
-        1px solid
-        rgba(255,255,255,0.35);
-
-    background:
-        rgba(255,255,255,0.08);
-
-    color: #fff;
-
-    cursor: pointer;
-
-    border-radius: 4px;
-
-    letter-spacing: 2px;
-
-    font-size: 13px;
-}
-
-
-#restartButton:hover {
-    background:
-        rgba(255,255,255,0.2);
-}
-
 
 /* =========================================================
-   TABLET
+   SCREEN SHAKE
 ========================================================= */
 
-@media
-(max-width: 900px) {
+#game.shake {
+    animation: shake 0.5s ease;
+}
+
+@keyframes shake {
+
+    0%,
+    100% {
+        transform: translate(0, 0);
+    }
+
+    15% {
+        transform: translate(-4px, 3px);
+    }
+
+    30% {
+        transform: translate(4px, -3px);
+    }
+
+    45% {
+        transform: translate(-3px, -2px);
+    }
+
+    60% {
+        transform: translate(3px, 2px);
+    }
+
+    75% {
+        transform: translate(-2px, 1px);
+    }
+}
+
+/* =========================================================
+   LOADING BAR
+========================================================= */
+
+.loadingBar {
+    width: 100%;
+    height: 5px;
+
+    margin: 25px 0 12px;
+
+    overflow: hidden;
+
+    background: rgba(255, 255, 255, 0.08);
+}
+
+#loadingProgress {
+    width: 0%;
+    height: 100%;
+
+    background: #fff;
+
+    transition: width 0.2s ease;
+}
+
+#loadingText {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.4);
+}
+
+/* =========================================================
+   DESKTOP POINTER
+========================================================= */
+
+@media (min-width: 901px) {
+
+    #mobileControls {
+        display: none !important;
+    }
+
+    #crosshair {
+        display: block;
+    }
+}
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 900px) {
 
     #mobileControls {
         display: block;
     }
 
-
     #crosshair {
-        width: 20px;
-        height: 20px;
+        width: 24px;
+        height: 24px;
     }
 
-
-    #crosshair::before {
-        left: 2px;
-        top: 9px;
-
-        width: 16px;
-        height: 2px;
-    }
-
-
-    #crosshair::after {
-        left: 9px;
-        top: 2px;
-
-        width: 2px;
-        height: 16px;
-    }
-
-
-    #crosshair span {
-        left: 7px;
-        top: 7px;
-
-        width: 6px;
+    #crosshair span:nth-child(1) {
         height: 6px;
+        left: 11px;
     }
 
-
-    #batteryContainer {
-        right: 15px;
-        bottom: 15px;
-
-        width: 120px;
+    #crosshair span:nth-child(2) {
+        height: 6px;
+        left: 11px;
     }
 
-
-    #interactionText {
-        bottom: 23%;
-
-        font-size: 12px;
+    #crosshair span:nth-child(3) {
+        width: 6px;
+        top: 11px;
     }
 
-
-    #messageBox {
-        top: 8%;
-
-        max-width: 85vw;
-
-        font-size: 14px;
-    }
-}
-
-
-/* =========================================================
-   MOBILE PHONE
-========================================================= */
-
-@media
-(max-width: 600px) {
-
-    #startPanel {
-        width: 90vw;
-
-        padding: 35px 22px;
+    #crosshair span:nth-child(4) {
+        width: 6px;
+        top: 11px;
     }
 
+    #objectiveBox {
+        top: 12px;
+        left: 12px;
 
-    #startPanel h1 {
-        letter-spacing: 5px;
+        width: min(270px, 58vw);
 
-        font-size: 30px;
+        padding: 9px 11px;
     }
 
-
-    .subtitle {
-        font-size: 12px;
-
-        letter-spacing: 1px;
+    #objective {
+        font-size: 11px;
     }
 
-
-    .controls-info {
-        display: none;
-    }
-
-
-    #joystick {
-        left: 22px;
-        bottom: 22px;
-
-        width: 125px;
-        height: 125px;
-    }
-
-
-    #joystickKnob {
-        width: 58px;
-        height: 58px;
-    }
-
-
-    #mobileButtons {
-        right: 18px;
-        bottom: 20px;
-
-        gap: 10px;
-    }
-
-
-    #mobileButtons button {
-        width: 58px;
-        height: 58px;
-
-        font-size: 12px;
-    }
-
-
-    #flashlightButton {
-        font-size: 22px !important;
-    }
-
-
-    #batteryContainer {
+    #weaponHUD {
+        top: 12px;
         right: 12px;
-        top: 15px;
-        bottom: auto;
 
-        width: 110px;
+        min-width: 110px;
 
-        padding: 8px;
+        padding: 9px 11px;
     }
 
-
-    #batteryLabel {
-        font-size: 8px;
-    }
-
-
-    #batteryPercent {
+    #weaponName {
         font-size: 9px;
     }
 
-
-    #messageBox {
-        top: 12%;
-
-        padding: 10px 16px;
-
-        font-size: 13px;
+    #ammoText {
+        font-size: 17px;
     }
 
+    #healthContainer {
+        left: 12px;
+        bottom: 20px;
 
-    #interactionText {
-        bottom: 27%;
+        width: 150px;
+    }
 
-        padding: 8px 13px;
+    #batteryContainer {
+        right: 12px;
+        bottom: 20px;
 
-        font-size: 11px;
+        width: 150px;
+    }
+
+    #message {
+        bottom: 165px;
+
+        width: 82%;
+
+        padding: 11px 13px;
+    }
+
+    #interaction {
+        bottom: 145px;
+    }
+
+    .menuBox {
+        padding: 30px 22px;
+    }
+
+    .menuBox h1 {
+        font-size: clamp(32px, 10vw, 50px);
+
+        letter-spacing: 4px;
+    }
+
+    .controlsGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .controlsGrid > div {
+        min-height: 38px;
+    }
+
+    .controlsGrid span {
+        font-size: 10px;
     }
 }
-
 
 /* =========================================================
-   SMALL PHONES
+   SMALL MOBILE
 ========================================================= */
 
-@media
-(max-width: 380px) {
+@media (max-width: 600px) {
 
-    #joystick {
+    #joystickBase {
+        left: 16px;
+        bottom: 18px;
+
         width: 105px;
         height: 105px;
-
-        left: 15px;
-        bottom: 15px;
     }
-
 
     #joystickKnob {
-        width: 50px;
-        height: 50px;
+        width: 44px;
+        height: 44px;
     }
-
 
     #mobileButtons {
-        right: 12px;
-        bottom: 14px;
+        right: 10px;
+        bottom: 12px;
 
-        gap: 7px;
+        width: 185px;
+
+        gap: 5px;
     }
 
+    .mobileButton {
+        min-height: 44px;
 
-    #mobileButtons button {
-        width: 50px;
-        height: 50px;
+        font-size: 8px;
+    }
+
+    .fireButton {
+        min-height: 54px;
+    }
+
+    #healthContainer,
+    #batteryContainer {
+        width: 125px;
+        padding: 7px 8px;
+    }
+
+    #healthText,
+    #batteryText {
+        right: 8px;
+        bottom: 5px;
+    }
+
+    #objectiveBox {
+        width: 55vw;
+    }
+
+    #weaponHUD {
+        min-width: 90px;
     }
 }
 
+/* =========================================================
+   VERY SMALL DEVICES
+========================================================= */
+
+@media (max-width: 400px) {
+
+    #mobileButtons {
+        width: 165px;
+    }
+
+    .mobileButton {
+        min-height: 40px;
+    }
+
+    #joystickBase {
+        width: 95px;
+        height: 95px;
+    }
+
+    #healthContainer,
+    #batteryContainer {
+        width: 110px;
+    }
+
+    #objectiveBox {
+        width: 52vw;
+    }
+}
 
 /* =========================================================
    LANDSCAPE MOBILE
 ========================================================= */
 
-@media
-(max-height: 500px)
-and
-(max-width: 900px) {
+@media (max-height: 500px) and (max-width: 900px) {
 
-    #joystick {
-        left: 20px;
-        bottom: 15px;
-
-        width: 105px;
-        height: 105px;
+    #joystickBase {
+        bottom: 12px;
     }
-
-
-    #joystickKnob {
-        width: 48px;
-        height: 48px;
-    }
-
 
     #mobileButtons {
-        right: 15px;
-        bottom: 15px;
-
-        flex-direction: row;
-
-        gap: 8px;
+        bottom: 10px;
     }
 
-
-    #mobileButtons button {
-        width: 52px;
-        height: 52px;
+    #mobileButtons .mobileButton {
+        min-height: 38px;
     }
 
+    #message {
+        bottom: 100px;
+    }
 
+    #interaction {
+        bottom: 85px;
+    }
+
+    #healthContainer,
     #batteryContainer {
-        top: 10px;
-        right: 10px;
-    }
-
-
-    #interactionText {
-        bottom: 15%;
+        bottom: 10px;
     }
 }
 
-
 /* =========================================================
-   PREVENT SELECTION / DRAG
+   SCROLLBAR
 ========================================================= */
 
-button,
-canvas,
-div {
-    -webkit-user-select: none;
-    user-select: none;
+::-webkit-scrollbar {
+    width: 5px;
 }
 
-
-img {
-    -webkit-user-drag: none;
+::-webkit-scrollbar-track {
+    background: #050505;
 }
 
+::-webkit-scrollbar-thumb {
+    background: #333;
+}
 
 /* =========================================================
-   SAFARI / IOS FIX
+   POINTER LOCK / FOCUS
 ========================================================= */
 
-html {
-    -webkit-text-size-adjust: 100%;
+canvas:focus {
+    outline: none;
 }
-
-
-body {
-    overscroll-behavior: none;
-}
-
 
 /* =========================================================
-   HIDE MOBILE UI ON TRUE DESKTOP
+   ACCESSIBILITY
 ========================================================= */
 
-@media
-(min-width: 901px) {
-
-    #mobileControls {
-        display: none !important;
-    }
+button {
+    font-family: inherit;
+    outline: none;
 }
+
+button:focus-visible {
+    outline: 2px solid rgba(255, 255, 255, 0.7);
+    outline-offset: 2px;
+}
+
+/* =========================================================
+   END STYLE
+========================================================= */
