@@ -1,9 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>THE LAST ROOM</title>
+
     <link rel="stylesheet" href="style.css">
 </head>
 
@@ -13,7 +16,10 @@
 
         <canvas id="gameCanvas"></canvas>
 
-        <!-- HUD -->
+        <!-- =========================
+             HUD
+        ========================== -->
+
         <div id="hud">
 
             <div id="gameTitle">
@@ -29,26 +35,36 @@
             </div>
 
             <div id="interaction">
+
                 <div id="interactionMain"></div>
+
                 <div id="interactionSub"></div>
+
             </div>
 
             <div id="status">
+
                 <div>FLASHLIGHT</div>
+
                 <div id="batteryBar">
                     <div id="batteryFill"></div>
                 </div>
+
             </div>
 
             <div id="message"></div>
 
             <div id="vignette"></div>
+
             <div id="noise"></div>
 
         </div>
 
 
-        <!-- MAIN MENU -->
+        <!-- =========================
+             MAIN MENU
+        ========================== -->
+
         <section id="mainMenu" class="menu">
 
             <div class="menuContent">
@@ -57,21 +73,36 @@
                     AN EXPERIMENT IN PSYCHOLOGICAL HORROR
                 </div>
 
-                <h1>THE LAST ROOM</h1>
+                <h1>
+                    THE LAST ROOM
+                </h1>
 
                 <p class="menuDescription">
-                    You woke up somewhere you don't remember entering.
+
+                    You woke up somewhere
+                    you don't remember entering.
+
                     <br>
+
                     The electricity is still working.
+
                     <br>
+
                     Nobody should be here.
+
                 </p>
 
-                <button id="startButton" class="menuButton">
+                <button
+                    id="startButton"
+                    class="menuButton"
+                >
                     ENTER
                 </button>
 
-                <button id="controlsButton" class="textButton">
+                <button
+                    id="controlsButton"
+                    class="textButton"
+                >
                     CONTROLS
                 </button>
 
@@ -80,8 +111,14 @@
         </section>
 
 
-        <!-- PAUSE MENU -->
-        <section id="pauseMenu" class="menu hidden">
+        <!-- =========================
+             PAUSE MENU
+        ========================== -->
+
+        <section
+            id="pauseMenu"
+            class="menu hidden"
+        >
 
             <div class="menuContent">
 
@@ -89,17 +126,28 @@
                     PAUSED
                 </div>
 
-                <h2>THE LAST ROOM</h2>
+                <h2>
+                    THE LAST ROOM
+                </h2>
 
-                <button id="resumeButton" class="menuButton">
+                <button
+                    id="resumeButton"
+                    class="menuButton"
+                >
                     RESUME
                 </button>
 
-                <button id="restartButton" class="menuButton secondary">
+                <button
+                    id="restartButton"
+                    class="menuButton secondary"
+                >
                     RESTART
                 </button>
 
-                <button id="pauseControlsButton" class="textButton">
+                <button
+                    id="pauseControlsButton"
+                    class="textButton"
+                >
                     CONTROLS
                 </button>
 
@@ -108,40 +156,86 @@
         </section>
 
 
-        <!-- CONTROLS -->
-        <section id="controlsPanel" class="panel hidden">
+        <!-- =========================
+             CONTROLS
+        ========================== -->
+
+        <section
+            id="controlsPanel"
+            class="panel hidden"
+        >
 
             <div class="controlsBox">
 
-                <button id="closeControls" class="closeButton">
+                <button
+                    id="closeControls"
+                    class="closeButton"
+                >
                     ×
                 </button>
 
-                <h2>CONTROLS</h2>
+                <h2>
+                    CONTROLS
+                </h2>
 
                 <div class="controlRow">
-                    <strong>W A S D</strong>
-                    <span>Move</span>
+
+                    <strong>
+                        W A S D
+                    </strong>
+
+                    <span>
+                        Move
+                    </span>
+
                 </div>
 
                 <div class="controlRow">
-                    <strong>MOUSE</strong>
-                    <span>Look around</span>
+
+                    <strong>
+                        MOUSE
+                    </strong>
+
+                    <span>
+                        Look around
+                    </span>
+
                 </div>
 
                 <div class="controlRow">
-                    <strong>E</strong>
-                    <span>Interact</span>
+
+                    <strong>
+                        E
+                    </strong>
+
+                    <span>
+                        Interact
+                    </span>
+
                 </div>
 
                 <div class="controlRow">
-                    <strong>F</strong>
-                    <span>Flashlight</span>
+
+                    <strong>
+                        F
+                    </strong>
+
+                    <span>
+                        Flashlight
+                    </span>
+
                 </div>
 
                 <div class="controlRow">
-                    <strong>ESC</strong>
-                    <span>Pause</span>
+
+                    <strong>
+                        ESC
+                    </strong>
+
+                    <span>
+                        Pause
+                    </span>
+
                 </div>
 
             </div>
@@ -153,4 +247,5 @@
     <script src="game.js"></script>
 
 </body>
+
 </html>
