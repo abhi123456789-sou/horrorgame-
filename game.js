@@ -4568,44 +4568,6 @@ window.addEventListener(
             event.code;
 
 
-       /* =================================================
-   ENTER — SAFE START / RESUME / RESTART
-================================================= */
-
-if (code === "Enter") {
-
-    event.preventDefault();
-    event.stopPropagation();
-
-    if (event.repeat) {
-        return;
-    }
-
-    /*
-       Use current game state only.
-       Never allow multiple Enter actions
-       in the same event cycle.
-    */
-
-    if (state.gameOver === true) {
-        restartGame();
-        return;
-    }
-
-    if (state.paused === true) {
-        resumeGame();
-        return;
-    }
-
-    if (state.started !== true) {
-        startGame();
-        return;
-    }
-
-    return;
-}
-
-
             /*
                RESUME
             */
