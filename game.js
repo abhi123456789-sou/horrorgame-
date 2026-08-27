@@ -4568,43 +4568,42 @@ window.addEventListener(
             event.code;
 
 
-        /* =================================================
-           ENTER
-           SINGLE CLEAN HANDLER
-        ================================================= */
+       /* =================================================
+   ENTER — SAFE START / RESUME / RESTART
+================================================= */
 
-        if (
-            code === "Enter"
-        ) {
+if (code === "Enter") {
 
-            /*
-               Ignore auto-repeat when Enter
-               is held down.
-            */
+    event.preventDefault();
+    event.stopPropagation();
 
-            if (
-                event.repeat
-            ) {
-                return;
-            }
+    if (event.repeat) {
+        return;
+    }
 
+    /*
+       Use current game state only.
+       Never allow multiple Enter actions
+       in the same event cycle.
+    */
 
-            event.preventDefault();
+    if (state.gameOver === true) {
+        restartGame();
+        return;
+    }
 
+    if (state.paused === true) {
+        resumeGame();
+        return;
+    }
 
-            /*
-               START
-            */
+    if (state.started !== true) {
+        startGame();
+        return;
+    }
 
-            if (
-                !state.started &&
-                !state.gameOver
-            ) {
-
-                startGame();
-
-                return;
-            }
+    return;
+}
 
 
             /*
