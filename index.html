@@ -15,9 +15,14 @@
         content="yes"
     >
 
+    <meta
+        name="theme-color"
+        content="#05070a"
+    >
+
     <title>GUN GAME</title>
 
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="./style.css">
 
 </head>
 
@@ -25,71 +30,84 @@
 <body>
 
 
-    <!-- =====================================================
-         ROTATE DEVICE MESSAGE
-    ====================================================== -->
+<!-- ========================================================
+     ROTATE SCREEN
+========================================================= -->
 
-    <div id="rotateScreen">
+<div id="rotateScreen">
 
-        <div class="rotateIcon">
-            ↻
-        </div>
-
-        <h1>ROTATE DEVICE</h1>
-
-        <p>
-            Please turn your phone sideways
-            to play.
-        </p>
-
+    <div class="rotateIcon">
+        ↻
     </div>
 
+    <h1>ROTATE DEVICE</h1>
 
-    <!-- =====================================================
-         START MENU
-    ====================================================== -->
+    <p>
+        Please turn your phone sideways to play.
+    </p>
 
-    <div id="startMenu">
-
-        <div class="menuContent">
-
-            <h1>GUN GAME</h1>
-
-            <p class="subtitle">
-                3D FPS
-            </p>
+</div>
 
 
-            <div class="controlsDesktop">
+<!-- ========================================================
+     START MENU
+========================================================= -->
 
-                <h3>DESKTOP CONTROLS</h3>
+<div id="startMenu">
+
+    <div class="menuPanel">
+
+        <div class="gameTitle">
+            GUN GAME
+        </div>
+
+        <div class="gameSubtitle">
+            3D FPS SURVIVAL
+        </div>
+
+
+        <div class="menuInfo">
+
+            <div class="desktopControls">
+
+                <h3>DESKTOP</h3>
 
                 <p>
-                    <b>W A S D</b> — Move
+                    <b>W A S D</b>
+                    Move
                 </p>
 
                 <p>
-                    <b>MOUSE</b> — Aim
+                    <b>MOUSE</b>
+                    Aim
                 </p>
 
                 <p>
-                    <b>LEFT CLICK</b> — Shoot
+                    <b>LEFT CLICK</b>
+                    Shoot
                 </p>
 
                 <p>
-                    <b>R</b> — Reload
+                    <b>R</b>
+                    Reload
                 </p>
 
                 <p>
-                    <b>SHIFT</b> — Sprint
+                    <b>SHIFT</b>
+                    Sprint
+                </p>
+
+                <p>
+                    <b>ESC</b>
+                    Pause / Release Mouse
                 </p>
 
             </div>
 
 
-            <div class="controlsMobile">
+            <div class="mobileControls">
 
-                <h3>MOBILE CONTROLS</h3>
+                <h3>MOBILE</h3>
 
                 <p>
                     Landscape Mode
@@ -104,204 +122,301 @@
                 </p>
 
                 <p>
-                    Fire Button — Shoot
+                    🔫 — Fire
+                </p>
+
+                <p>
+                    ↻ — Reload
+                </p>
+
+                <p>
+                    🏃 — Sprint
                 </p>
 
             </div>
 
+        </div>
 
-            <button id="startButton">
 
-                START GAME
+        <button
+            id="startButton"
+            class="mainButton"
+        >
+            START GAME
+        </button>
 
-            </button>
+    </div>
 
+</div>
+
+
+<!-- ========================================================
+     HUD
+========================================================= -->
+
+<div id="hud">
+
+
+    <!-- TOP LEFT -->
+
+    <div id="healthPanel" class="hudPanel">
+
+        <div class="hudTitle">
+            HEALTH
+        </div>
+
+        <div class="healthBar">
+
+            <div id="healthFill"></div>
+
+        </div>
+
+        <div class="healthNumber">
+            <span id="health">100</span>
+            / 100
         </div>
 
     </div>
 
 
-    <!-- =====================================================
-         GAME HUD
-    ====================================================== -->
+    <!-- TOP CENTER -->
 
-    <div id="hud">
+    <div id="wavePanel" class="hudPanel">
 
-
-        <!-- TOP HUD -->
-
-        <div id="topHud">
-
-
-            <div class="hudBox">
-
-                <span class="hudLabel">
-                    HEALTH
-                </span>
-
-                <span id="health">
-                    100
-                </span>
-
-            </div>
-
-
-            <div class="hudBox">
-
-                <span class="hudLabel">
-                    KILLS
-                </span>
-
-                <span id="kills">
-                    0
-                </span>
-
-            </div>
-
-
-            <div class="hudBox">
-
-                <span class="hudLabel">
-                    AMMO
-                </span>
-
-                <span id="ammo">
-                    12
-                </span>
-
-                <span>
-                    /
-                </span>
-
-                <span id="reserve">
-                    120
-                </span>
-
-            </div>
-
-
+        <div class="hudTitle">
+            WAVE
         </div>
 
-
-        <!-- =================================================
-             CROSSHAIR
-        ================================================== -->
-
-        <div id="crosshair">
-
-            <span></span>
-            <span></span>
-            <span></span>
-            <span></span>
-
+        <div id="wave">
+            1
         </div>
-
-
-        <!-- MESSAGE -->
-
-        <div id="message"></div>
-
-
-        <!-- =================================================
-             MOBILE CONTROLS
-        ================================================== -->
-
-        <div id="mobileControls">
-
-
-            <!-- LEFT JOYSTICK -->
-
-            <div id="joystick">
-
-                <div id="joystickBase">
-
-                    <div id="joystickKnob"></div>
-
-                </div>
-
-            </div>
-
-
-            <!-- FIRE -->
-
-            <button
-                id="fireButton"
-                class="mobileButton"
-            >
-                🔫
-            </button>
-
-
-            <!-- RELOAD -->
-
-            <button
-                id="reloadButton"
-                class="mobileButton"
-            >
-                ↻
-            </button>
-
-
-            <!-- SPRINT -->
-
-            <button
-                id="sprintButton"
-                class="mobileButton"
-            >
-                🏃
-            </button>
-
-
-        </div>
-
 
     </div>
 
 
-    <!-- =====================================================
-         GAME OVER
-    ====================================================== -->
+    <!-- TOP RIGHT -->
 
-    <div
-        id="gameOver"
-        class="hidden"
-    >
+    <div id="scorePanel" class="hudPanel">
 
-        <div class="menuContent">
+        <div class="hudTitle">
+            SCORE
+        </div>
 
-            <h1>
-                GAME OVER
-            </h1>
+        <div id="score">
+            0
+        </div>
+
+    </div>
+
+
+    <!-- CROSSHAIR -->
+
+    <div id="crosshair">
+
+        <span class="crossLine crossTop"></span>
+        <span class="crossLine crossBottom"></span>
+        <span class="crossLine crossLeft"></span>
+        <span class="crossLine crossRight"></span>
+
+        <span class="crossDot"></span>
+
+    </div>
+
+
+    <!-- CENTER MESSAGE -->
+
+    <div id="message"></div>
+
+
+    <!-- AMMO -->
+
+    <div id="ammoPanel">
+
+        <span id="ammo">
+            12
+        </span>
+
+        <span class="ammoDivider">
+            /
+        </span>
+
+        <span id="reserve">
+            120
+        </span>
+
+    </div>
+
+
+    <!-- KILLS -->
+
+    <div id="killsPanel">
+
+        KILLS:
+        <span id="kills">
+            0
+        </span>
+
+    </div>
+
+
+    <!-- RELOADING -->
+
+    <div id="reloadIndicator">
+        RELOADING...
+    </div>
+
+
+    <!-- DAMAGE FLASH -->
+
+    <div id="damageFlash"></div>
+
+
+    <!-- MOBILE CONTROLS -->
+
+    <div id="mobileControls">
+
+
+        <!-- JOYSTICK -->
+
+        <div id="joystick">
+
+            <div id="joystickBase">
+
+                <div id="joystickKnob"></div>
+
+            </div>
+
+        </div>
+
+
+        <!-- SPRINT -->
+
+        <button
+            id="sprintButton"
+            class="mobileButton"
+        >
+            🏃
+        </button>
+
+
+        <!-- RELOAD -->
+
+        <button
+            id="reloadButton"
+            class="mobileButton"
+        >
+            ↻
+        </button>
+
+
+        <!-- FIRE -->
+
+        <button
+            id="fireButton"
+            class="mobileButton fireButton"
+        >
+            🔫
+        </button>
+
+    </div>
+
+
+</div>
+
+
+<!-- ========================================================
+     PAUSE
+========================================================= -->
+
+<div
+    id="pauseMenu"
+    class="overlay hidden"
+>
+
+    <div class="menuPanel smallPanel">
+
+        <h1>
+            PAUSED
+        </h1>
+
+        <p>
+            Press ESC to resume
+        </p>
+
+        <button
+            id="resumeButton"
+            class="mainButton"
+        >
+            RESUME
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- ========================================================
+     GAME OVER
+========================================================= -->
+
+<div
+    id="gameOver"
+    class="overlay hidden"
+>
+
+    <div class="menuPanel smallPanel">
+
+        <div class="gameTitle smallTitle">
+            GAME OVER
+        </div>
+
+
+        <div class="finalStats">
 
             <p>
-
-                KILLS:
-                <span id="finalKills">
+                SCORE:
+                <strong id="finalScore">
                     0
-                </span>
-
+                </strong>
             </p>
 
+            <p>
+                KILLS:
+                <strong id="finalKills">
+                    0
+                </strong>
+            </p>
 
-            <button id="restartButton">
-
-                PLAY AGAIN
-
-            </button>
+            <p>
+                WAVE:
+                <strong id="finalWave">
+                    1
+                </strong>
+            </p>
 
         </div>
 
+
+        <button
+            id="restartButton"
+            class="mainButton"
+        >
+            PLAY AGAIN
+        </button>
+
     </div>
 
+</div>
 
-    <!-- =====================================================
-         GAME
-    ====================================================== -->
 
-    <script
-        type="module"
-        src="game.js"
-    ></script>
+<!-- ========================================================
+     THREE.JS GAME
+========================================================= -->
+
+<script
+    type="module"
+    src="./game.js"
+></script>
 
 
 </body>
