@@ -1,13 +1,15 @@
 /* =========================================================
    GUN GAME
-   GLOBAL CSS
+   COMPLETE CSS
 ========================================================= */
+
 
 * {
 
     box-sizing: border-box;
 
     margin: 0;
+
     padding: 0;
 
     user-select: none;
@@ -23,6 +25,7 @@ html,
 body {
 
     width: 100%;
+
     height: 100%;
 
     overflow: hidden;
@@ -37,380 +40,28 @@ body {
 }
 
 
-/* =========================================================
-   CANVAS
-========================================================= */
+body {
+
+    position: relative;
+
+}
+
 
 canvas {
 
+    position: fixed;
+
+    inset: 0;
+
     display: block;
 
     width: 100%;
+
     height: 100%;
 
+    z-index: 1;
+
     touch-action: none;
-
-}
-
-
-/* =========================================================
-   HUD
-========================================================= */
-
-#hud {
-
-    position: fixed;
-
-    inset: 0;
-
-    z-index: 10;
-
-    pointer-events: none;
-
-    color: #fff;
-
-}
-
-
-/* =========================================================
-   TOP HUD
-========================================================= */
-
-#topHud {
-
-    position: absolute;
-
-    top: 0;
-    left: 0;
-
-    width: 100%;
-
-    padding: 20px;
-
-    display: flex;
-
-    justify-content: space-between;
-
-    align-items: flex-start;
-
-    gap: 10px;
-
-}
-
-
-.hudBox {
-
-    min-width: 100px;
-
-    padding: 10px 15px;
-
-    border-radius: 6px;
-
-    background:
-        rgba(0, 0, 0, 0.55);
-
-    border:
-        1px solid
-        rgba(255, 255, 255, 0.15);
-
-    text-align: center;
-
-    font-size: 17px;
-
-    font-weight: bold;
-
-    text-shadow:
-        2px 2px 4px #000;
-
-}
-
-
-.hudLabel {
-
-    margin-right: 5px;
-
-    font-size: 12px;
-
-    color: #aaa;
-
-}
-
-
-/* =========================================================
-   CROSSHAIR
-========================================================= */
-
-#crosshair {
-
-    position: absolute;
-
-    left: 50%;
-    top: 50%;
-
-    width: 24px;
-    height: 24px;
-
-    transform:
-        translate(-50%, -50%);
-
-}
-
-
-#crosshair span {
-
-    position: absolute;
-
-    display: block;
-
-    background: #fff;
-
-    box-shadow:
-        0 0 4px #000;
-
-}
-
-
-#crosshair span:nth-child(1) {
-
-    width: 8px;
-    height: 2px;
-
-    left: 0;
-    top: 11px;
-
-}
-
-
-#crosshair span:nth-child(2) {
-
-    width: 8px;
-    height: 2px;
-
-    right: 0;
-    top: 11px;
-
-}
-
-
-#crosshair span:nth-child(3) {
-
-    width: 2px;
-    height: 8px;
-
-    left: 11px;
-    top: 0;
-
-}
-
-
-#crosshair span:nth-child(4) {
-
-    width: 2px;
-    height: 8px;
-
-    left: 11px;
-    bottom: 0;
-
-}
-
-
-/* =========================================================
-   MESSAGE
-========================================================= */
-
-#message {
-
-    position: absolute;
-
-    left: 50%;
-    top: 58%;
-
-    transform:
-        translateX(-50%);
-
-    font-size: 18px;
-
-    font-weight: bold;
-
-    text-shadow:
-        2px 2px 5px #000;
-
-}
-
-
-/* =========================================================
-   START MENU / GAME OVER
-========================================================= */
-
-#startMenu,
-#gameOver {
-
-    position: fixed;
-
-    inset: 0;
-
-    z-index: 100;
-
-    display: flex;
-
-    align-items: center;
-
-    justify-content: center;
-
-    text-align: center;
-
-    color: #fff;
-
-    background:
-
-        radial-gradient(
-            circle at center,
-            #20242a 0%,
-            #090a0c 55%,
-            #000 100%
-        );
-
-}
-
-
-.menuContent {
-
-    width: min(
-        90%,
-        600px
-    );
-
-}
-
-
-#startMenu h1,
-#gameOver h1 {
-
-    font-size:
-        clamp(
-            45px,
-            9vw,
-            90px
-        );
-
-    letter-spacing: 8px;
-
-}
-
-
-.subtitle {
-
-    margin-top: 5px;
-
-    color: #aaa;
-
-    font-size: 20px;
-
-    letter-spacing: 5px;
-
-}
-
-
-.controlsDesktop,
-.controlsMobile {
-
-    margin-top: 30px;
-
-    padding: 15px;
-
-    border-radius: 8px;
-
-    background:
-        rgba(255, 255, 255, 0.04);
-
-}
-
-
-.controlsDesktop h3,
-.controlsMobile h3 {
-
-    margin-bottom: 10px;
-
-    font-size: 14px;
-
-    color: #aaa;
-
-    letter-spacing: 2px;
-
-}
-
-
-.controlsDesktop p,
-.controlsMobile p {
-
-    margin: 6px;
-
-    color: #ccc;
-
-}
-
-
-.controlsMobile {
-
-    display: none;
-
-}
-
-
-/* =========================================================
-   BUTTON
-========================================================= */
-
-button {
-
-    border: none;
-
-    outline: none;
-
-    cursor: pointer;
-
-    touch-action: manipulation;
-
-}
-
-
-#startButton,
-#restartButton {
-
-    margin-top: 25px;
-
-    padding:
-        15px 35px;
-
-    border-radius: 6px;
-
-    background: #fff;
-
-    color: #000;
-
-    font-size: 18px;
-
-    font-weight: bold;
-
-}
-
-
-#startButton:hover,
-#restartButton:hover {
-
-    transform:
-        scale(1.05);
-
-}
-
-
-/* =========================================================
-   HIDDEN
-========================================================= */
-
-.hidden {
-
-    display: none !important;
 
 }
 
@@ -427,7 +78,16 @@ button {
 
     inset: 0;
 
-    z-index: 1000;
+    z-index: 9999;
+
+    background:
+        radial-gradient(
+            circle,
+            #18202a,
+            #050609
+        );
+
+    color: #fff;
 
     align-items: center;
 
@@ -439,10 +99,6 @@ button {
 
     padding: 30px;
 
-    color: #fff;
-
-    background: #050505;
-
 }
 
 
@@ -450,16 +106,18 @@ button {
 
     font-size: 80px;
 
-    margin-bottom: 15px;
+    line-height: 1;
+
+    margin-bottom: 25px;
 
 }
 
 
 #rotateScreen h1 {
 
-    font-size: 30px;
+    font-size: 32px;
 
-    letter-spacing: 4px;
+    letter-spacing: 5px;
 
 }
 
@@ -469,6 +127,746 @@ button {
     margin-top: 15px;
 
     color: #aaa;
+
+    font-size: 16px;
+
+}
+
+
+/* =========================================================
+   HUD
+========================================================= */
+
+#hud {
+
+    position: fixed;
+
+    inset: 0;
+
+    z-index: 20;
+
+    pointer-events: none;
+
+    color: #fff;
+
+}
+
+
+/* =========================================================
+   HUD PANELS
+========================================================= */
+
+.hudPanel {
+
+    position: absolute;
+
+    padding: 9px 14px;
+
+    min-width: 100px;
+
+    background:
+        rgba(0, 0, 0, 0.58);
+
+    border:
+        1px solid
+        rgba(255,255,255,0.15);
+
+    border-radius: 5px;
+
+    text-shadow:
+        2px 2px 4px #000;
+
+}
+
+
+.hudTitle {
+
+    color: #aeb5bd;
+
+    font-size: 10px;
+
+    letter-spacing: 2px;
+
+    margin-bottom: 5px;
+
+}
+
+
+#healthPanel {
+
+    top: 18px;
+
+    left: 18px;
+
+}
+
+
+#wavePanel {
+
+    top: 18px;
+
+    left: 50%;
+
+    transform:
+        translateX(-50%);
+
+    text-align: center;
+
+    min-width: 85px;
+
+}
+
+
+#wave {
+
+    font-size: 22px;
+
+    font-weight: bold;
+
+}
+
+
+#scorePanel {
+
+    top: 18px;
+
+    right: 18px;
+
+    text-align: right;
+
+}
+
+
+#score {
+
+    font-size: 20px;
+
+    font-weight: bold;
+
+}
+
+
+/* =========================================================
+   HEALTH
+========================================================= */
+
+.healthBar {
+
+    width: 170px;
+
+    height: 8px;
+
+    background: #252525;
+
+    border-radius: 10px;
+
+    overflow: hidden;
+
+}
+
+
+#healthFill {
+
+    width: 100%;
+
+    height: 100%;
+
+    background: #e8e8e8;
+
+    transition:
+        width 0.15s ease;
+
+}
+
+
+.healthNumber {
+
+    margin-top: 5px;
+
+    font-size: 12px;
+
+    color: #ddd;
+
+}
+
+
+/* =========================================================
+   CROSSHAIR
+========================================================= */
+
+#crosshair {
+
+    position: absolute;
+
+    left: 50%;
+
+    top: 50%;
+
+    width: 26px;
+
+    height: 26px;
+
+    transform:
+        translate(-50%, -50%);
+
+}
+
+
+.crossLine {
+
+    position: absolute;
+
+    background: #fff;
+
+    box-shadow:
+        0 0 4px #000;
+
+}
+
+
+.crossTop {
+
+    width: 2px;
+
+    height: 8px;
+
+    left: 12px;
+
+    top: 0;
+
+}
+
+
+.crossBottom {
+
+    width: 2px;
+
+    height: 8px;
+
+    left: 12px;
+
+    bottom: 0;
+
+}
+
+
+.crossLeft {
+
+    width: 8px;
+
+    height: 2px;
+
+    left: 0;
+
+    top: 12px;
+
+}
+
+
+.crossRight {
+
+    width: 8px;
+
+    height: 2px;
+
+    right: 0;
+
+    top: 12px;
+
+}
+
+
+.crossDot {
+
+    position: absolute;
+
+    width: 3px;
+
+    height: 3px;
+
+    left: 50%;
+
+    top: 50%;
+
+    transform:
+        translate(-50%, -50%);
+
+    background: #fff;
+
+    border-radius: 50%;
+
+}
+
+
+/* =========================================================
+   AMMO
+========================================================= */
+
+#ammoPanel {
+
+    position: absolute;
+
+    right: 25px;
+
+    bottom: 25px;
+
+    font-size: 42px;
+
+    font-weight: bold;
+
+    letter-spacing: 2px;
+
+    text-shadow:
+        3px 3px 6px #000;
+
+}
+
+
+#ammo {
+
+    font-size: 52px;
+
+}
+
+
+#reserve {
+
+    font-size: 25px;
+
+    color: #aaa;
+
+}
+
+
+.ammoDivider {
+
+    color: #777;
+
+    margin:
+        0 4px;
+
+}
+
+
+/* =========================================================
+   KILLS
+========================================================= */
+
+#killsPanel {
+
+    position: absolute;
+
+    left: 25px;
+
+    bottom: 25px;
+
+    padding: 8px 13px;
+
+    background:
+        rgba(0,0,0,0.5);
+
+    border-radius: 5px;
+
+    font-size: 15px;
+
+    font-weight: bold;
+
+}
+
+
+/* =========================================================
+   MESSAGE
+========================================================= */
+
+#message {
+
+    position: absolute;
+
+    left: 50%;
+
+    top: 60%;
+
+    transform:
+        translateX(-50%);
+
+    font-size: 20px;
+
+    font-weight: bold;
+
+    letter-spacing: 2px;
+
+    text-shadow:
+        2px 2px 6px #000;
+
+    opacity: 0;
+
+    transition:
+        opacity 0.15s ease;
+
+}
+
+
+#message.show {
+
+    opacity: 1;
+
+}
+
+
+/* =========================================================
+   RELOAD
+========================================================= */
+
+#reloadIndicator {
+
+    position: absolute;
+
+    left: 50%;
+
+    top: 56%;
+
+    transform:
+        translateX(-50%);
+
+    display: none;
+
+    font-size: 18px;
+
+    font-weight: bold;
+
+    letter-spacing: 3px;
+
+    text-shadow:
+        2px 2px 5px #000;
+
+}
+
+
+#reloadIndicator.show {
+
+    display: block;
+
+}
+
+
+/* =========================================================
+   DAMAGE FLASH
+========================================================= */
+
+#damageFlash {
+
+    position: absolute;
+
+    inset: 0;
+
+    background:
+        rgba(255, 0, 0, 0.35);
+
+    opacity: 0;
+
+    transition:
+        opacity 0.08s;
+
+}
+
+
+#damageFlash.hit {
+
+    opacity: 1;
+
+}
+
+
+/* =========================================================
+   START MENU
+========================================================= */
+
+#startMenu {
+
+    position: fixed;
+
+    inset: 0;
+
+    z-index: 100;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    color: #fff;
+
+    text-align: center;
+
+    background:
+        radial-gradient(
+            circle at center,
+            #202832 0%,
+            #0a0d11 45%,
+            #000 100%
+        );
+
+}
+
+
+.menuPanel {
+
+    width: min(
+        90%,
+        620px
+    );
+
+    padding: 40px;
+
+    background:
+        rgba(0,0,0,0.42);
+
+    border:
+        1px solid
+        rgba(255,255,255,0.12);
+
+    border-radius: 12px;
+
+    box-shadow:
+        0 25px 80px
+        rgba(0,0,0,0.6);
+
+    backdrop-filter:
+        blur(10px);
+
+}
+
+
+.gameTitle {
+
+    font-size:
+        clamp(
+            45px,
+            8vw,
+            85px
+        );
+
+    font-weight:
+        900;
+
+    letter-spacing:
+        8px;
+
+    text-shadow:
+        0 5px 20px
+        rgba(0,0,0,0.8);
+
+}
+
+
+.smallTitle {
+
+    font-size:
+        clamp(
+            35px,
+            7vw,
+            65px
+        );
+
+}
+
+
+.gameSubtitle {
+
+    margin-top: 8px;
+
+    color: #9ca3aa;
+
+    letter-spacing: 6px;
+
+    font-size: 15px;
+
+}
+
+
+.menuInfo {
+
+    display: flex;
+
+    gap: 15px;
+
+    margin-top: 35px;
+
+}
+
+
+.desktopControls,
+.mobileControls {
+
+    flex: 1;
+
+    padding: 18px;
+
+    border:
+        1px solid
+        rgba(255,255,255,0.08);
+
+    background:
+        rgba(255,255,255,0.035);
+
+    border-radius: 8px;
+
+}
+
+
+.menuInfo h3 {
+
+    color: #aeb5bd;
+
+    font-size: 12px;
+
+    letter-spacing: 3px;
+
+    margin-bottom: 12px;
+
+}
+
+
+.menuInfo p {
+
+    margin: 7px 0;
+
+    color: #c9ced3;
+
+    font-size: 13px;
+
+}
+
+
+.mobileControls {
+
+    display: none;
+
+}
+
+
+/* =========================================================
+   BUTTON
+========================================================= */
+
+.mainButton {
+
+    margin-top: 30px;
+
+    padding:
+        15px 38px;
+
+    border: none;
+
+    border-radius: 6px;
+
+    background: #fff;
+
+    color: #000;
+
+    font-size: 17px;
+
+    font-weight: bold;
+
+    letter-spacing: 1px;
+
+    cursor: pointer;
+
+    transition:
+        transform 0.15s,
+        background 0.15s;
+
+    pointer-events: auto;
+
+}
+
+
+.mainButton:hover {
+
+    transform:
+        scale(1.05);
+
+    background: #ddd;
+
+}
+
+
+.mainButton:active {
+
+    transform:
+        scale(0.97);
+
+}
+
+
+/* =========================================================
+   OVERLAYS
+========================================================= */
+
+.overlay {
+
+    position: fixed;
+
+    inset: 0;
+
+    z-index: 200;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    background:
+        rgba(0,0,0,0.78);
+
+    color: #fff;
+
+    text-align: center;
+
+}
+
+
+.smallPanel {
+
+    max-width: 500px;
+
+}
+
+
+.smallPanel h1 {
+
+    font-size: 50px;
+
+    letter-spacing: 5px;
+
+}
+
+
+.smallPanel p {
+
+    margin-top: 15px;
+
+    color: #aaa;
+
+}
+
+
+.finalStats {
+
+    margin-top: 25px;
+
+    line-height: 2;
+
+    font-size: 18px;
+
+}
+
+
+.hidden {
+
+    display: none !important;
 
 }
 
@@ -499,10 +897,12 @@ button {
     position: absolute;
 
     left: 25px;
+
     bottom: 25px;
 
-    width: 140px;
-    height: 140px;
+    width: 145px;
+
+    height: 145px;
 
     pointer-events: auto;
 
@@ -513,19 +913,18 @@ button {
 
 #joystickBase {
 
-    position: absolute;
+    width: 145px;
 
-    width: 140px;
-    height: 140px;
+    height: 145px;
 
     border-radius: 50%;
 
     background:
-        rgba(255, 255, 255, 0.12);
+        rgba(255,255,255,0.10);
 
     border:
         2px solid
-        rgba(255, 255, 255, 0.25);
+        rgba(255,255,255,0.25);
 
 }
 
@@ -535,10 +934,12 @@ button {
     position: absolute;
 
     left: 50%;
+
     top: 50%;
 
-    width: 60px;
-    height: 60px;
+    width: 62px;
+
+    height: 62px;
 
     transform:
         translate(-50%, -50%);
@@ -546,11 +947,11 @@ button {
     border-radius: 50%;
 
     background:
-        rgba(255, 255, 255, 0.35);
+        rgba(255,255,255,0.30);
 
     border:
         2px solid
-        rgba(255, 255, 255, 0.5);
+        rgba(255,255,255,0.5);
 
 }
 
@@ -564,22 +965,25 @@ button {
     position: absolute;
 
     width: 65px;
+
     height: 65px;
 
     border-radius: 50%;
 
-    pointer-events: auto;
-
-    background:
-        rgba(255, 255, 255, 0.15);
-
     border:
         2px solid
-        rgba(255, 255, 255, 0.3);
+        rgba(255,255,255,0.3);
+
+    background:
+        rgba(255,255,255,0.13);
 
     color: #fff;
 
-    font-size: 27px;
+    font-size: 26px;
+
+    pointer-events: auto;
+
+    touch-action: none;
 
     backdrop-filter:
         blur(5px);
@@ -587,31 +991,35 @@ button {
 }
 
 
-#fireButton {
+.fireButton {
 
-    right: 30px;
-    bottom: 30px;
+    right: 28px;
 
-    width: 85px;
-    height: 85px;
+    bottom: 25px;
 
-    font-size: 35px;
+    width: 90px;
+
+    height: 90px;
+
+    font-size: 38px;
 
 }
 
 
 #reloadButton {
 
-    right: 130px;
-    bottom: 40px;
+    right: 135px;
+
+    bottom: 35px;
 
 }
 
 
 #sprintButton {
 
-    left: 175px;
-    bottom: 40px;
+    left: 185px;
+
+    bottom: 35px;
 
 }
 
@@ -624,21 +1032,60 @@ button {
 (max-width: 900px)
 and (orientation: landscape) {
 
-    #startMenu h1 {
 
-        font-size: 50px;
+    #startMenu .menuPanel {
+
+        padding: 18px;
+
+        width: 88%;
+
+        max-width: 700px;
 
     }
 
 
-    .controlsDesktop {
+    .gameTitle {
+
+        font-size: 45px;
+
+        letter-spacing: 5px;
+
+    }
+
+
+    .gameSubtitle {
+
+        font-size: 11px;
+
+        letter-spacing: 4px;
+
+    }
+
+
+    .menuInfo {
+
+        margin-top: 15px;
+
+    }
+
+
+    .menuInfo p {
+
+        margin: 4px;
+
+        font-size: 11px;
+
+    }
+
+
+    .desktopControls {
 
         display: none;
 
     }
 
 
-    .controlsMobile {
+    .mobileControls {
 
         display: block;
 
@@ -654,25 +1101,95 @@ and (orientation: landscape) {
 
     #topHud {
 
-        padding: 10px;
+        padding: 5px;
 
     }
 
 
-    .hudBox {
+    #healthPanel {
 
-        min-width: auto;
+        top: 8px;
 
-        padding: 7px 10px;
-
-        font-size: 13px;
+        left: 8px;
 
     }
 
 
-    .hudLabel {
+    #wavePanel {
 
-        font-size: 10px;
+        top: 8px;
+
+    }
+
+
+    #scorePanel {
+
+        top: 8px;
+
+        right: 8px;
+
+    }
+
+
+    .hudPanel {
+
+        padding: 5px 8px;
+
+        min-width: 70px;
+
+    }
+
+
+    .hudTitle {
+
+        font-size: 8px;
+
+        margin-bottom: 2px;
+
+    }
+
+
+    .healthBar {
+
+        width: 100px;
+
+        height: 6px;
+
+    }
+
+
+    #ammoPanel {
+
+        right: 15px;
+
+        bottom: 15px;
+
+        font-size: 28px;
+
+    }
+
+
+    #ammo {
+
+        font-size: 36px;
+
+    }
+
+
+    #reserve {
+
+        font-size: 18px;
+
+    }
+
+
+    #killsPanel {
+
+        left: 15px;
+
+        bottom: 15px;
+
+        font-size: 12px;
 
     }
 
@@ -687,6 +1204,7 @@ and (orientation: landscape) {
 (max-width: 900px)
 and (orientation: portrait) {
 
+
     #rotateScreen {
 
         display: flex;
@@ -696,9 +1214,83 @@ and (orientation: portrait) {
 
     #startMenu,
     #hud,
+    #pauseMenu,
     #gameOver {
 
         display: none !important;
+
+    }
+
+}
+
+
+/* =========================================================
+   SMALL DESKTOP
+========================================================= */
+
+@media
+(max-width: 700px)
+and (orientation: landscape) {
+
+
+    #joystick {
+
+        width: 115px;
+
+        height: 115px;
+
+        left: 15px;
+
+        bottom: 15px;
+
+    }
+
+
+    #joystickBase {
+
+        width: 115px;
+
+        height: 115px;
+
+    }
+
+
+    #joystickKnob {
+
+        width: 50px;
+
+        height: 50px;
+
+    }
+
+
+    #sprintButton {
+
+        left: 145px;
+
+        bottom: 25px;
+
+    }
+
+
+    #reloadButton {
+
+        right: 115px;
+
+        bottom: 25px;
+
+    }
+
+
+    .fireButton {
+
+        right: 18px;
+
+        bottom: 15px;
+
+        width: 75px;
+
+        height: 75px;
 
     }
 
