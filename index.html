@@ -1,135 +1,309 @@
-```html
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
     <meta charset="UTF-8">
 
     <meta
         name="viewport"
-        content="width=device-width, initial-scale=1.0"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    >
+
+    <meta
+        name="mobile-web-app-capable"
+        content="yes"
     >
 
     <title>GUN GAME</title>
 
     <link rel="stylesheet" href="style.css">
+
 </head>
+
 
 <body>
 
-    <!-- =========================
-         GAME HUD
-    ========================== -->
 
-    <div id="hud">
+    <!-- =====================================================
+         ROTATE DEVICE MESSAGE
+    ====================================================== -->
 
-        <div id="topHud">
+    <div id="rotateScreen">
 
-            <div class="hudBox">
-                HEALTH:
-                <span id="health">100</span>
-            </div>
-
-            <div class="hudBox">
-                KILLS:
-                <span id="kills">0</span>
-            </div>
-
-            <div class="hudBox">
-                AMMO:
-                <span id="ammo">12</span>
-                /
-                <span id="reserve">120</span>
-            </div>
-
+        <div class="rotateIcon">
+            ↻
         </div>
 
+        <h1>ROTATE DEVICE</h1>
 
-        <!-- Crosshair -->
-
-        <div id="crosshair">
-            +
-        </div>
-
-
-        <!-- Message -->
-
-        <div id="message"></div>
+        <p>
+            Please turn your phone sideways
+            to play.
+        </p>
 
     </div>
 
 
-    <!-- =========================
+    <!-- =====================================================
          START MENU
-    ========================== -->
+    ====================================================== -->
 
     <div id="startMenu">
 
-        <h1>GUN GAME</h1>
+        <div class="menuContent">
 
-        <p>
-            A simple 3D FPS
-        </p>
+            <h1>GUN GAME</h1>
 
-        <div class="controls">
-
-            <p>
-                <b>W A S D</b> — Move
+            <p class="subtitle">
+                3D FPS
             </p>
 
-            <p>
-                <b>MOUSE</b> — Aim
-            </p>
 
-            <p>
-                <b>LEFT CLICK</b> — Shoot
-            </p>
+            <div class="controlsDesktop">
 
-            <p>
-                <b>R</b> — Reload
-            </p>
+                <h3>DESKTOP CONTROLS</h3>
 
-            <p>
-                <b>SHIFT</b> — Sprint
-            </p>
+                <p>
+                    <b>W A S D</b> — Move
+                </p>
+
+                <p>
+                    <b>MOUSE</b> — Aim
+                </p>
+
+                <p>
+                    <b>LEFT CLICK</b> — Shoot
+                </p>
+
+                <p>
+                    <b>R</b> — Reload
+                </p>
+
+                <p>
+                    <b>SHIFT</b> — Sprint
+                </p>
+
+            </div>
+
+
+            <div class="controlsMobile">
+
+                <h3>MOBILE CONTROLS</h3>
+
+                <p>
+                    Landscape Mode
+                </p>
+
+                <p>
+                    Left Joystick — Move
+                </p>
+
+                <p>
+                    Right Side — Aim
+                </p>
+
+                <p>
+                    Fire Button — Shoot
+                </p>
+
+            </div>
+
+
+            <button id="startButton">
+
+                START GAME
+
+            </button>
 
         </div>
 
-        <button id="startButton">
-            START GAME
-        </button>
+    </div>
+
+
+    <!-- =====================================================
+         GAME HUD
+    ====================================================== -->
+
+    <div id="hud">
+
+
+        <!-- TOP HUD -->
+
+        <div id="topHud">
+
+
+            <div class="hudBox">
+
+                <span class="hudLabel">
+                    HEALTH
+                </span>
+
+                <span id="health">
+                    100
+                </span>
+
+            </div>
+
+
+            <div class="hudBox">
+
+                <span class="hudLabel">
+                    KILLS
+                </span>
+
+                <span id="kills">
+                    0
+                </span>
+
+            </div>
+
+
+            <div class="hudBox">
+
+                <span class="hudLabel">
+                    AMMO
+                </span>
+
+                <span id="ammo">
+                    12
+                </span>
+
+                <span>
+                    /
+                </span>
+
+                <span id="reserve">
+                    120
+                </span>
+
+            </div>
+
+
+        </div>
+
+
+        <!-- =================================================
+             CROSSHAIR
+        ================================================== -->
+
+        <div id="crosshair">
+
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+
+        </div>
+
+
+        <!-- MESSAGE -->
+
+        <div id="message"></div>
+
+
+        <!-- =================================================
+             MOBILE CONTROLS
+        ================================================== -->
+
+        <div id="mobileControls">
+
+
+            <!-- LEFT JOYSTICK -->
+
+            <div id="joystick">
+
+                <div id="joystickBase">
+
+                    <div id="joystickKnob"></div>
+
+                </div>
+
+            </div>
+
+
+            <!-- FIRE -->
+
+            <button
+                id="fireButton"
+                class="mobileButton"
+            >
+                🔫
+            </button>
+
+
+            <!-- RELOAD -->
+
+            <button
+                id="reloadButton"
+                class="mobileButton"
+            >
+                ↻
+            </button>
+
+
+            <!-- SPRINT -->
+
+            <button
+                id="sprintButton"
+                class="mobileButton"
+            >
+                🏃
+            </button>
+
+
+        </div>
+
 
     </div>
 
 
-    <!-- =========================
+    <!-- =====================================================
          GAME OVER
-    ========================== -->
+    ====================================================== -->
 
-    <div id="gameOver" class="hidden">
+    <div
+        id="gameOver"
+        class="hidden"
+    >
 
-        <h1>GAME OVER</h1>
+        <div class="menuContent">
 
-        <p>
-            KILLS:
-            <span id="finalKills">0</span>
-        </p>
+            <h1>
+                GAME OVER
+            </h1>
 
-        <button id="restartButton">
-            PLAY AGAIN
-        </button>
+            <p>
+
+                KILLS:
+                <span id="finalKills">
+                    0
+                </span>
+
+            </p>
+
+
+            <button id="restartButton">
+
+                PLAY AGAIN
+
+            </button>
+
+        </div>
 
     </div>
 
 
-    <!-- =========================
-         THREE.JS GAME
-    ========================== -->
+    <!-- =====================================================
+         GAME
+    ====================================================== -->
 
     <script
         type="module"
         src="game.js"
     ></script>
 
+
 </body>
+
 </html>
-```
